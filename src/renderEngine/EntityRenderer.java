@@ -15,6 +15,7 @@ import java.util.Map;
 public class EntityRenderer {
 
     private StaticShader shader;
+    private float entityHieght;
 
     public EntityRenderer(StaticShader shader, Matrix4f projectionMatrix){
         this.shader=shader;
