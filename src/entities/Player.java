@@ -5,15 +5,14 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.util.vector.Vector3f;
 import renderEngine.DisplayManager;
+import terrains.Terrain;
 
 public class Player extends Entity {
 
-    private static final float RUN_SPEED=20;
+    private static final float RUN_SPEED=40;
     private static final float TURN_SPEED=160;
     private static final float GRAVITY=-50;
     private static final float JUMP_POWER=30;
-
-    private static final float TERRAIN_HIEGHT=0;
 
     private float currentSpeed=0;
     private float currentTurnSpeed=0;
@@ -25,7 +24,7 @@ public class Player extends Entity {
         super(model, position, rotX, rotY, rotZ, scale);
     }
 
-    public void move(){
+    public void move(Terrain terrain){
         checkInputs();
         super.increaseRotation(0,currentTurnSpeed* DisplayManager.getDelta(),0);
         float distance=currentSpeed*DisplayManager.getDelta()*getScale();
@@ -34,10 +33,11 @@ public class Player extends Entity {
         super.increasePosition(dx,0,dz);
         upwardsSpeed+=GRAVITY*DisplayManager.getDelta()*getScale();
         super.increasePosition(0,upwardsSpeed*DisplayManager.getDelta(),0);
-        if(super.getPosition().y<TERRAIN_HIEGHT){
+        float terrainHeight=terrain.getHeightOfTerrain(super.getPosition().x,super.getPosition().z);
+        if(super.getPosition().y<terrainHeight){
             upwardsSpeed=0;
             isInAir=false;
-            super.getPosition().y=TERRAIN_HIEGHT;
+            super.getPosition().y=terrainHeight;
         }
     }
 
