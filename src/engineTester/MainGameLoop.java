@@ -67,7 +67,7 @@ public class MainGameLoop {
             }else{
                 y=terrain3.getHeightOfTerrain(x,z);
             }
-            entities.add(new Entity(tree,new Vector3f(x,y,z),0,0,0,random.nextFloat()*1+4));
+            entities.add(new Entity(tree,new Vector3f(x,y,z),0,0,0,random.nextFloat()*4+4));
             x=random.nextFloat()*1600-800;
             z=random.nextFloat()*1600-800;
             if(x>terrain.getX()&&z<terrain3.getZ()) {
@@ -79,7 +79,7 @@ public class MainGameLoop {
             }else{
                 y=terrain3.getHeightOfTerrain(x,z);
             }
-            entities.add(new Entity(fern,random.nextInt(4),new Vector3f(x,y,z),0,0,0,0.9f));
+            entities.add(new Entity(fern,random.nextInt(4),new Vector3f(x,y,z),0,random.nextFloat()*360,0,0.9f));
             x=random.nextFloat()*1600-800;
             z=random.nextFloat()*1600-800;
             if(x>terrain.getX()&&z<terrain3.getZ()) {
@@ -91,7 +91,7 @@ public class MainGameLoop {
             }else{
                 y=terrain3.getHeightOfTerrain(x,z);
             }
-            entities.add(new Entity(lowPolyTree,new Vector3f(x,y,z),0,0,0,0.6f));
+            entities.add(new Entity(lowPolyTree,new Vector3f(x,y,z),0,random.nextFloat()*360,0,random.nextFloat()*0.5f+0.5f));
         }
         MasterRenderer renderer=new MasterRenderer();
         TexturedModel bunny=new TexturedModel(OBJLoader.loadObjModel("stanfordBunny",loader,true),new ModelTexture(loader.loadTexture("white")));
