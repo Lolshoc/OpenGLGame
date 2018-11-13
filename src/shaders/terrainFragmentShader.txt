@@ -21,16 +21,16 @@ uniform vec3 skyColour;
 
 void main(void){
 
-    vec4 blendMapColour=texture(blendMap, pass_textureCoords);
+    vec4 blendMapColour=texture(blendMap,pass_textureCoords);
 
-    float backTextureAmount=1-(blendMapColour.r+blendMapColour.g+blendMapColour.b);
+    float backgroundTextureAmount=1-(blendMapColour.r+blendMapColour.g+blendMapColour.b);
     vec2 tiledCoords=pass_textureCoords*40;
-    vec4 backgroundTextureColour=texture(backgroundTexture,tiledCoords)*backTextureAmount;
-    vec4 rTextureColor=texture(rTexture,tiledCoords)*blendMapColour.r;
-    vec4 gTextureColor=texture(gTexture,tiledCoords)*blendMapColour.g;
-    vec4 bTextureColor=texture(bTexture,tiledCoords)*blendMapColour.b;
+    vec4 backgroundTextureColour=texture(backgroundTexture,tiledCoords)*backgroundTextureAmount;
+    vec4 rTextureColour=texture(rTexture,tiledCoords)*blendMapColour.r;
+    vec4 gTextureColour=texture(gTexture,tiledCoords)*blendMapColour.g;
+    vec4 bTextureColour=texture(bTexture,tiledCoords)*blendMapColour.b;
 
-    vec4 totalColour=backgroundTextureColour + rTextureColor + gTextureColor + bTextureColor;
+    vec4 totalColour=backgroundTextureColour+rTextureColour+gTextureColour+bTextureColour;
 
     vec3 unitNormal=normalize(surfaceNormal);
     vec3 unitToLightVector=normalize(toLightVector);

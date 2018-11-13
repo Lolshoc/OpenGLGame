@@ -21,8 +21,8 @@ public class TerrainShader extends ShaderProgram {
     private int location_skyColour;
     private int location_backgroundTexture;
     private int location_rTexture;
-    private int location_bTexture;
     private int location_gTexture;
+    private int location_bTexture;
     private int location_blendMap;
 
     public TerrainShader() {

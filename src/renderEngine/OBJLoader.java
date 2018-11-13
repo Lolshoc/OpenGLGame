@@ -1,5 +1,6 @@
 package renderEngine;
 
+import entities.Camera;
 import models.RawModel;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
@@ -14,7 +15,7 @@ import java.util.List;
 
 public class OBJLoader {
 
-    public static RawModel loadObjModel(String fileName, Loader loader) throws FileNotFoundException {
+    public static RawModel loadObjModel(String fileName, Loader loader, boolean player) throws FileNotFoundException {
         FileReader fr=null;
         try {
             fr = new FileReader(new File("res/" + fileName + ".obj"));
@@ -85,6 +86,22 @@ public class OBJLoader {
 
         for(int i=0;i<indices.size();i++){
             indicesArray[i]=indices.get(i);
+        }
+        if(player){
+            float max;
+            float min;
+            max=verticesArray[1];
+            min=verticesArray[1];
+            for(int i=4;i<verticesArray.length;i++){
+                if(i%3==1){
+                    if(max<verticesArray[i]){
+                        max=verticesArray[i];
+                    }else if(min>verticesArray[i]){
+                        min=verticesArray[i];
+                    }
+                }
+            }
+            Camera.setDefaultHieght((max-min)*0.5f);
         }
         return loader.loadToVAO(verticesArray,textureArray,indicesArray,normalsArray);
 

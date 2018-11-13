@@ -2,14 +2,14 @@ package textures;
 
 public class TerrainTexture {
 
-    private int textureID;
+    private int TextureID;
 
     public TerrainTexture(int textureID) {
-        this.textureID = textureID;
+        TextureID = textureID;
     }
 
     public int getTextureID() {
-        return textureID;
+        return TextureID;
     }
 
 }

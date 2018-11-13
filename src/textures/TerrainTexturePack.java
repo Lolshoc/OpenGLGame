@@ -22,12 +22,12 @@ public class TerrainTexturePack {
         return rTexture;
     }
 
-    public TerrainTexture getbTexture() {
-        return bTexture;
-    }
-
     public TerrainTexture getgTexture() {
         return gTexture;
+    }
+
+    public TerrainTexture getbTexture() {
+        return bTexture;
     }
 
 }
