@@ -50,7 +50,11 @@ public class MainGameLoop {
         flower.getTexture().setUseFakeLighting(true);
         flower.getTexture().setHasTransparency(true);
         TexturedModel lowPolyTree=new TexturedModel(OBJLoader.loadObjModel("lowPolyTree",loader,false),new ModelTexture(loader.loadTexture("lowPolyTree")));
-        Light light=new Light(new Vector3f(20000,20000,2000),new Vector3f(1,1,1));
+        List<Light> lights=new ArrayList<>();
+        lights.add(new Light(new Vector3f(20000,20000,2000),new Vector3f(1,1,1)));
+        lights.add(new Light(new Vector3f(1600,20000,1600),new Vector3f(10,0,0)));
+        lights.add(new Light(new Vector3f(0,20000,1600),new Vector3f(0,10,0)));
+        lights.add(new Light(new Vector3f(1600,20000,0),new Vector3f(0,0,10)));
         Terrain terrain=new Terrain(0,-1,loader,texturePack,blendMap, "heightmap");
         Terrain terrain2=new Terrain(-1,-1,loader,texturePack,blendMap, "heightmap");
         Terrain terrain3=new Terrain(0,0,loader,texturePack,blendMap,"heightmap");
@@ -141,7 +145,7 @@ public class MainGameLoop {
             renderer.processTerrain(terrain2);
             renderer.processTerrain(terrain3);
             renderer.processTerrain(terrain4);
-            renderer.render(light,camera);
+            renderer.render(lights,camera);
             guiRenderer.render(guis);
             DisplayManager.updateDisplay();
         }
