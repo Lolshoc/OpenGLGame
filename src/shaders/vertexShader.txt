@@ -17,8 +17,8 @@ uniform vec3 lightPosition;
 uniform vec3 lightColour;
 uniform float useFakeLighting;
 
-const float density=0.007;
-const float gradient=1.5;
+const float density=0.0;
+const float gradient=5;
 
 void main(void){
 

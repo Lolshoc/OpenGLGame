@@ -31,11 +31,17 @@ public class Camera {
         if(Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)){
             position.y-=0.2f;
         }
-        if(Keyboard.isKeyDown(Keyboard.KEY_Q)){
+        if(Keyboard.isKeyDown(Keyboard.KEY_LEFT)){
             yaw-=0.2f;
         }
-        if(Keyboard.isKeyDown(Keyboard.KEY_E)){
+        if(Keyboard.isKeyDown(Keyboard.KEY_RIGHT)){
             yaw+=0.2f;
+        }
+        if(Keyboard.isKeyDown(Keyboard.KEY_DOWN)){
+            pitch+=0.2f;
+        }
+        if(Keyboard.isKeyDown(Keyboard.KEY_UP)){
+            pitch-=0.2f;
         }
     }
 
