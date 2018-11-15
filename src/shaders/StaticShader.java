@@ -11,8 +11,6 @@ import java.util.List;
 
 public class StaticShader extends ShaderProgram {
 
-    private static final int MAX_LIGHTS=4;
-
     private static final String VERTEX_FILE="src/shaders/vertexShader.txt";
     private static final String FRAGMENT_FILE="src/shaders/fragmentShader.txt";
 
@@ -21,6 +19,7 @@ public class StaticShader extends ShaderProgram {
     private int location_viewMatrix;
     private int location_lightPosition[];
     private int location_lightColour[];
+    private int location_attenuation[];
     private int location_shineDamper;
     private int location_reflectivity;
     private int location_useFakeLighting;
@@ -50,11 +49,14 @@ public class StaticShader extends ShaderProgram {
         location_skyColour=super.getUniformLocation("skyColour");
         location_numberOfRows=super.getUniformLocation("numberOfRows");
         location_offset=super.getUniformLocation("offset");
-        location_lightPosition=new int[MAX_LIGHTS];
-        location_lightColour=new int[MAX_LIGHTS];
-        for(int i=0;i<MAX_LIGHTS;i++){
+        location_lightPosition=new int[super.MAX_LIGHT_NUM];
+        location_lightColour=new int[super.MAX_LIGHT_NUM];
+        location_attenuation=new int[super.MAX_LIGHT_NUM];
+        for(int i=0;i<super.MAX_LIGHT_NUM;i++){
             location_lightPosition[i]=super.getUniformLocation("lightPosition["+i+"]");
             location_lightColour[i]=super.getUniformLocation("lightColour["+i+"]");
+            location_attenuation[i]=super.getUniformLocation("attenuation["+i+"]");
+
         }
     }
 
@@ -84,13 +86,15 @@ public class StaticShader extends ShaderProgram {
     }
 
     public void loadLight(List<Light> light){
-        for(int i=0;i<MAX_LIGHTS;i++){
+        for(int i=0;i<super.MAX_LIGHT_NUM;i++){
             if(i<light.size()){
                 super.loadVecter(location_lightPosition[i],light.get(i).getPosition());
                 super.loadVecter(location_lightColour[i],light.get(i).getColour());
+                super.loadVecter(location_attenuation[i],light.get(i).getAttenuation());
             }else{
                 super.loadVecter(location_lightPosition[i],new Vector3f(0.0f,0.0f,0.0f));
                 super.loadVecter(location_lightColour[i],new Vector3f(0.0f,0.0f,0.0f));
+                super.loadVecter(location_attenuation[i],new Vector3f(1f,0.0f,0.0f));
             }
         }
     }

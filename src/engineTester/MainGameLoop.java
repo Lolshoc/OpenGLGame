@@ -29,6 +29,7 @@ public class MainGameLoop {
 
         DisplayManager.createDisplay();
         Loader loader=new Loader();
+        List<Entity> entities=new ArrayList<Entity>();
 
         TerrainTexture backgroundTexture=new TerrainTexture(loader.loadTexture("grassy2"));
         TerrainTexture rTexture=new TerrainTexture(loader.loadTexture("mud"));
@@ -50,20 +51,55 @@ public class MainGameLoop {
         flower.getTexture().setUseFakeLighting(true);
         flower.getTexture().setHasTransparency(true);
         TexturedModel lowPolyTree=new TexturedModel(OBJLoader.loadObjModel("lowPolyTree",loader,false),new ModelTexture(loader.loadTexture("lowPolyTree")));
-        List<Light> lights=new ArrayList<>();
-        lights.add(new Light(new Vector3f(20000,20000,2000),new Vector3f(1,1,1)));
-        lights.add(new Light(new Vector3f(1600,20000,1600),new Vector3f(10,0,0)));
-        lights.add(new Light(new Vector3f(0,20000,1600),new Vector3f(0,10,0)));
-        lights.add(new Light(new Vector3f(1600,20000,0),new Vector3f(0,0,10)));
+        TexturedModel lamp=new TexturedModel(OBJLoader.loadObjModel("lamp",loader,false),new ModelTexture(loader.loadTexture("lamp")));
+        lamp.getTexture().setUseFakeLighting(true);
         Terrain terrain=new Terrain(0,-1,loader,texturePack,blendMap, "heightmap");
         Terrain terrain2=new Terrain(-1,-1,loader,texturePack,blendMap, "heightmap");
         Terrain terrain3=new Terrain(0,0,loader,texturePack,blendMap,"heightmap");
         Terrain terrain4=new Terrain(-1,0,loader,texturePack,blendMap,"heightmap");
-        List<Entity> entities=new ArrayList<Entity>();
-        Random random=new Random();
-        float x;
+        List<Light> lights=new ArrayList<>();
+        lights.add(new Light(new Vector3f(2000,1000,-7000),new Vector3f(1f,1f,1f)));
+        lights.add(new Light(new Vector3f(-3200,10,-3200),new Vector3f(10,0,0)));
+        lights.add(new Light(new Vector3f(3200,10,-3200),new Vector3f(0,10,0)));
+        lights.add(new Light(new Vector3f(0,10,3200),new Vector3f(0,0,10)));
+        float x=185;
         float y;
-        float z;
+        float z=-293;
+        if(x>terrain.getX()&&z<terrain3.getZ()) {
+            y = terrain.getHeightOfTerrain(x, z);
+        }else if(x<terrain.getX()&&z<terrain3.getZ()){
+            y = terrain2.getHeightOfTerrain(x,z);
+        }else if(x<terrain.getX()&&z>terrain3.getZ()){
+            y=terrain4.getHeightOfTerrain(x,z);
+        }else{
+            y=terrain3.getHeightOfTerrain(x,z);
+        }
+        entities.add(new Entity(lamp,new Vector3f(x,y,z),0,0,0,1));
+        x=370;
+        z=-300;
+        if(x>terrain.getX()&&z<terrain3.getZ()) {
+            y = terrain.getHeightOfTerrain(x, z);
+        }else if(x<terrain.getX()&&z<terrain3.getZ()){
+            y = terrain2.getHeightOfTerrain(x,z);
+        }else if(x<terrain.getX()&&z>terrain3.getZ()){
+            y=terrain4.getHeightOfTerrain(x,z);
+        }else{
+            y=terrain3.getHeightOfTerrain(x,z);
+        }
+        entities.add(new Entity(lamp,new Vector3f(x,y,z),0,0,0,1));
+        x=293;
+        z=-305;
+        if(x>terrain.getX()&&z<terrain3.getZ()) {
+            y = terrain.getHeightOfTerrain(x, z);
+        }else if(x<terrain.getX()&&z<terrain3.getZ()){
+            y = terrain2.getHeightOfTerrain(x,z);
+        }else if(x<terrain.getX()&&z>terrain3.getZ()){
+            y=terrain4.getHeightOfTerrain(x,z);
+        }else{
+            y=terrain3.getHeightOfTerrain(x,z);
+        }
+        entities.add(new Entity(lamp,new Vector3f(x,y,z),0,0,0,1));
+        Random random=new Random();
         for(int i=0;i<500;i++){
             if(i%2==0){
                 x=random.nextFloat()*3200-1600;
