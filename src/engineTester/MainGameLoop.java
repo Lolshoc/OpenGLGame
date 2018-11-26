@@ -58,10 +58,10 @@ public class MainGameLoop {
         Terrain terrain3=new Terrain(0,0,loader,texturePack,blendMap,"heightmap");
         Terrain terrain4=new Terrain(-1,0,loader,texturePack,blendMap,"heightmap");
         List<Light> lights=new ArrayList<>();
-        lights.add(new Light(new Vector3f(2000,1000,-7000),new Vector3f(1f,1f,1f)));
-        lights.add(new Light(new Vector3f(-3200,10,-3200),new Vector3f(10,0,0)));
-        lights.add(new Light(new Vector3f(3200,10,-3200),new Vector3f(0,10,0)));
-        lights.add(new Light(new Vector3f(0,10,3200),new Vector3f(0,0,10)));
+        lights.add(new Light(new Vector3f(2000,1000,-7000),new Vector3f(1f,1f,1f),new Vector3f(0.001f,0.001f,0.001f)));
+        //lights.add(new Light(new Vector3f(-3200,10,-3200),new Vector3f(10,0,0)));
+        //lights.add(new Light(new Vector3f(3200,10,-3200),new Vector3f(0,10,0)));
+        //lights.add(new Light(new Vector3f(0,10,3200),new Vector3f(0,0,10)));
         float x=185;
         float y;
         float z=-293;
@@ -162,6 +162,12 @@ public class MainGameLoop {
         //GuiTexture gui=new GuiTexture(loader.loadTexture("texture"),new Vector2f(0.5f,0.5f),new Vector2f(0.25f,0.25f));
         //guis.add(gui);
         GuiRenderer guiRenderer=new GuiRenderer(loader);
+        float r=0.03f;
+        float g=0.03f;
+        float b=0.03f;
+        float oldr=0;
+        float oldg=0;
+        float oldb=0;
         while(!Display.isCloseRequested()){
             if(player.getPosition().x>terrain.getX()&&player.getPosition().z<terrain3.getZ()) {
                 player.move(terrain);
@@ -172,6 +178,44 @@ public class MainGameLoop {
             }else {
                 player.move(terrain3);
             }
+            if(player.getRotY()>180){
+                player.setRotY(player.getRotY()-360);
+            }else if(player.getRotY()<-180){
+                player.setRotY(player.getRotY()+360);
+            }/*
+            System.out.println(player.getRotY());
+            if(player.getRotY()<=45&&player.getRotY()>=-45){
+                lights.get(1).setPosition(new Vector3f(player.getPosition().x-100,10,player.getPosition().z+100));
+                lights.get(2).setPosition(new Vector3f(player.getPosition().x,10,player.getPosition().z-100));
+                lights.get(3).setPosition(new Vector3f(player.getPosition().x+100,player.getPosition().y+10,player.getPosition().z+100));
+            }else if(player.getRotY()>=45&&player.getRotY()<=135){
+                lights.get(1).setPosition(new Vector3f(player.getPosition().x-100,10,player.getPosition().z+100));
+                lights.get(2).setPosition(new Vector3f(player.getPosition().x+100,player.getPosition().y+10,player.getPosition().z));
+                lights.get(3).setPosition(new Vector3f(player.getPosition().x-100,player.getPosition().y+10,player.getPosition().z-100));
+            }else if(player.getRotY()>=-135&&player.getRotY()<=-45){
+                lights.get(1).setPosition(new Vector3f(player.getPosition().x,10,player.getPosition().z+100));
+                lights.get(2).setPosition(new Vector3f(player.getPosition().x+100,player.getPosition().y+10,player.getPosition().z-100));
+                lights.get(3).setPosition(new Vector3f(player.getPosition().x-100,player.getPosition().y+10,player.getPosition().z-100));
+            }else{
+                lights.get(1).setPosition(new Vector3f(player.getPosition().x-100,player.getPosition().y+10,player.getPosition().z-100));
+                lights.get(2).setPosition(new Vector3f(player.getPosition().x,10,player.getPosition().z+100));
+                lights.get(3).setPosition(new Vector3f(player.getPosition().x+100,player.getPosition().y+10,player.getPosition().z-100));
+
+            }*/
+            lights.get(0).setPosition(new Vector3f(player.getPosition().x,player.getPosition().y+100,player.getPosition().z));
+            lights.get(0).setColour(new Vector3f(oldr+r,oldg+g,oldb+b));
+            if(lights.get(0).getColour().x>5){
+                r=-0.04f;
+                g=-0.04f;
+                b=-0.04f;
+            }else if(lights.get(0).getColour().x<0){
+                r=0.04f;
+                g=0.04f;
+                b=0.04f;
+            }
+            oldr = lights.get(0).getColour().x;
+            oldg = lights.get(0).getColour().y;
+            oldb = lights.get(0).getColour().z;
             camera.move();
             renderer.processEntity(player);
             for(Entity entity:entities){
