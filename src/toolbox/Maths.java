@@ -46,4 +46,9 @@ public class Maths {
         return viewMatrix;
     }
 
+    public static float pythagorean(float a, float b) {
+        float c = (float)Math.sqrt((double) (a * a) + (b * b));
+        return c;
+    }
+
 }

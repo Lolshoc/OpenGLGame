@@ -59,13 +59,14 @@ public class MainGameLoop {
         Terrain terrain4=new Terrain(-1,0,loader,texturePack,blendMap,"heightmap");
         List<Light> lights=new ArrayList<>();
         lights.add(new Light(new Vector3f(2000,1000,-7000),new Vector3f(1f,1f,1f),new Vector3f(0.001f,0.001f,0.001f)));
+        lights.add(new Light(new Vector3f(185,terrain.getHeightOfTerrain(185,-293),-293),new Vector3f(2,2,0),new Vector3f(1,0.01f,0.002f)));
         //lights.add(new Light(new Vector3f(-3200,10,-3200),new Vector3f(10,0,0)));
         //lights.add(new Light(new Vector3f(3200,10,-3200),new Vector3f(0,10,0)));
         //lights.add(new Light(new Vector3f(0,10,3200),new Vector3f(0,0,10)));
-        float x=185;
+        float x;
+        float z;
         float y;
-        float z=-293;
-        if(x>terrain.getX()&&z<terrain3.getZ()) {
+        /*if(x>terrain.getX()&&z<terrain3.getZ()) {
             y = terrain.getHeightOfTerrain(x, z);
         }else if(x<terrain.getX()&&z<terrain3.getZ()){
             y = terrain2.getHeightOfTerrain(x,z);
@@ -98,9 +99,29 @@ public class MainGameLoop {
         }else{
             y=terrain3.getHeightOfTerrain(x,z);
         }
-        entities.add(new Entity(lamp,new Vector3f(x,y,z),0,0,0,1));
+        entities.add(new Entity(lamp,new Vector3f(x,y,z),0,0,0,1));*/
         Random random=new Random();
         for(int i=0;i<500;i++){
+            if(i%2==0){
+                x=random.nextFloat()*3200-1600;
+                z=random.nextFloat()*3200-1600;
+            }else {
+                x = random.nextFloat() * 1600 - 800;
+                z = random.nextFloat() * 1600 - 800;
+            }
+            if(x>terrain.getX()&&z<terrain3.getZ()) {
+                y = terrain.getHeightOfTerrain(x, z);
+            }else if(x<terrain.getX()&&z<terrain3.getZ()){
+                y = terrain2.getHeightOfTerrain(x,z);
+            }else if(x<terrain.getX()&&z>terrain3.getZ()){
+                y=terrain4.getHeightOfTerrain(x,z);
+            }else{
+                y=terrain3.getHeightOfTerrain(x,z);
+            }
+            if(i%5==0){
+                entities.add(new Entity(lamp,new Vector3f(x,y,z),0,0,0,1));
+                lights.add(new Light(new Vector3f(x,y+16,z),new Vector3f(2,2,0),new Vector3f(1f,0.01f,0.002f)));
+            }
             if(i%2==0){
                 x=random.nextFloat()*3200-1600;
                 z=random.nextFloat()*3200-1600;
@@ -225,7 +246,7 @@ public class MainGameLoop {
             renderer.processTerrain(terrain2);
             renderer.processTerrain(terrain3);
             renderer.processTerrain(terrain4);
-            renderer.render(lights,camera);
+            renderer.render(lights.get(0).findNearestLights(player.getPosition(),lights),camera);
             guiRenderer.render(guis);
             DisplayManager.updateDisplay();
         }
