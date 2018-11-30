@@ -246,7 +246,7 @@ public class MainGameLoop {
             renderer.processTerrain(terrain2);
             renderer.processTerrain(terrain3);
             renderer.processTerrain(terrain4);
-            renderer.render(lights.get(0).findNearestLights(player.getPosition(),lights),camera);
+            renderer.render(Light.findNearestLights(player.getPosition(),lights),camera);
             guiRenderer.render(guis);
             DisplayManager.updateDisplay();
         }

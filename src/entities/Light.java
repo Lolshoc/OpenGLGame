@@ -43,30 +43,38 @@ public class Light {
         this.colour = colour;
     }
 
-    public List<Light> findNearestLights(Vector3f position, List<Light> lights){
-        float light1=100000000;
-        float light2=100000000;
-        float light3=100000000;
-        int index[]=new int[3];
+    public static List<Light> findNearestLights(Vector3f position, List<Light> lights){
+        float[] distances=new float[]{100000000,100000000,100000000,100000000};
+        float index[]=new float[4];
         float difference;
         List<Light> fourLights=new ArrayList<>();
         for(Light light:lights){
-            difference=Maths.pythagorean(Math.abs(Math.abs(light.getPosition().x)-Math.abs(position.x)),Math.abs(Math.abs(light.getPosition().z)-Math.abs(position.z)));
-            if(difference<light1){
-                light1=difference;
+            difference=Maths.pythagorean(light.getPosition().x-position.x,light.getPosition().z-position.z);
+            if(difference<distances[0]){
+                Maths.shift(distances,0);
+                Maths.shift(index,0);
+                distances[0]=difference;
                 index[0]=lights.indexOf(light);
-            }else if(difference<light2){
-                light2=difference;
+            }else if(difference<distances[1]){
+                Maths.shift(distances,1);
+                Maths.shift(index,1);
+                Maths.shift(distances,2);
+                distances[1]=difference;
                 index[1]=lights.indexOf(light);
-            }else if(difference<light3){
-                light3=difference;
+            }else if(difference<distances[2]){
+                Maths.shift(distances,2);
+                Maths.shift(index,2);
+                distances[2]=difference;
                 index[2]=lights.indexOf(light);
+            }else if(difference<distances[3]){
+                distances[3]=difference;
+                index[3]=lights.indexOf(light);
             }
         }
-        fourLights.add(lights.get(index[0]));
-        fourLights.add(lights.get(index[1]));
-        fourLights.add(lights.get(index[2]));
-        fourLights.add(lights.get(0));
+        fourLights.add(lights.get((int)index[0]));
+        fourLights.add(lights.get((int)index[1]));
+        fourLights.add(lights.get((int)index[2]));
+        fourLights.add(lights.get((int)index[3]));
         return fourLights;
     }
 }

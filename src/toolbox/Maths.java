@@ -5,6 +5,9 @@ import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Maths {
 
     public static Matrix4f createTransformationMatrix(Vector2f translation, Vector2f scale) {
@@ -49,6 +52,17 @@ public class Maths {
     public static float pythagorean(float a, float b) {
         float c = (float)Math.sqrt((double) (a * a) + (b * b));
         return c;
+    }
+
+    public static float[] shift(float[] list, int index){
+        for(int i=list.length-1;i>0;i--){
+            if(i>index) {
+                list[i] = list[i - 1];
+            }else{
+                break;
+            }
+        }
+        return list;
     }
 
 }
