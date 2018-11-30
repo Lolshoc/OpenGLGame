@@ -29,7 +29,30 @@ public class Camera {
         float horizontalDistance=calculateHorizontalDistance();
         float verticalDistance=calculateVerticalDistance();
         calculateCameraPos(horizontalDistance,verticalDistance);
-        this.yaw=180-(player.getRotY()+angleAroundPlayer);
+        this.yaw=180-(player.getRotY()+angleAroundPlayer);if(Keyboard.isKeyDown(Keyboard.KEY_W)){
+            position.z-=0.2f;
+        }
+        if(Keyboard.isKeyDown(Keyboard.KEY_D)){
+            position.x+=0.2f;
+        }
+        if(Keyboard.isKeyDown(Keyboard.KEY_A)){
+            position.x-=0.2f;
+        }
+        if(Keyboard.isKeyDown(Keyboard.KEY_S)){
+            position.z+=0.2f;
+        }
+        if(Keyboard.isKeyDown(Keyboard.KEY_SPACE)){
+            position.y+=0.2f;
+        }
+        if(Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)){
+            position.y-=0.2f;
+        }
+        if(Keyboard.isKeyDown(Keyboard.KEY_Q)){
+            yaw-=0.2f;
+        }
+        if(Keyboard.isKeyDown(Keyboard.KEY_E)){
+            yaw+=0.2f;
+        }
     }
 
     public Vector3f getPosition() {

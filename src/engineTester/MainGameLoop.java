@@ -174,7 +174,7 @@ public class MainGameLoop {
             }
             entities.add(new Entity(lowPolyTree,new Vector3f(x,y,z),0,random.nextFloat()*360,0,random.nextFloat()*0.5f+1f));
         }
-        MasterRenderer renderer=new MasterRenderer();
+        MasterRenderer renderer=new MasterRenderer(loader);
         TexturedModel bunny=new TexturedModel(OBJLoader.loadObjModel("stanfordBunny",loader,true),new ModelTexture(loader.loadTexture("white")));
         Player player=new Player(bunny,new Vector3f(100,0,-50),0,180,0,0.75f);
         Camera camera=new Camera(player);
