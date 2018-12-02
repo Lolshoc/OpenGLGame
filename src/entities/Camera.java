@@ -120,4 +120,8 @@ public class Camera {
     public static void setDefaultHieght(float defaultHieght) {
         Camera.defaultHieght = defaultHieght;
     }
+
+    public void invertPitch(){
+        pitch=-pitch;
+    }
 }

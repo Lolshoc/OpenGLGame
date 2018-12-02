@@ -7,6 +7,8 @@ import org.lwjgl.util.vector.Vector3f;
 import renderEngine.DisplayManager;
 import terrains.Terrain;
 
+import java.util.List;
+
 public class Player extends Entity {
 
     private static final float RUN_SPEED=80;
@@ -67,6 +69,26 @@ public class Player extends Entity {
 
         if(Keyboard.isKeyDown(Keyboard.KEY_SPACE)){
             jump();
+        }
+    }
+
+    public Terrain calculateTerrain(List<Terrain> terrains){
+        if(getPosition().x>terrains.get(0).getX()&&getPosition().z<terrains.get(2).getZ()) {
+            return terrains.get(0);
+        }else if(getPosition().x<terrains.get(0).getX()&&getPosition().z<terrains.get(2).getZ()){
+            return terrains.get(1);
+        }else if(getPosition().x<terrains.get(0).getX()&getPosition().z>terrains.get(2).getZ()){
+            return terrains.get(3);
+        }else {
+            return terrains.get(2);
+        }
+    }
+
+    public void limitRotation(){
+        if(getRotY()>180){
+            setRotY(getRotY()-360);
+        }else if(getRotY()<-180){
+            setRotY(getRotY()+360);
         }
     }
 }

@@ -3,10 +3,12 @@ package renderEngine;
 import entities.Camera;
 import entities.Entity;
 import entities.Light;
+import entities.Player;
 import models.TexturedModel;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Matrix4f;
+import org.lwjgl.util.vector.Vector4f;
 import shaders.StaticShader;
 import shaders.TerrainShader;
 import skybox.SkyboxRenderer;
@@ -56,15 +58,21 @@ public class MasterRenderer {
         GL11.glDisable(GL11.GL_CULL_FACE);
     }
 
-    public void render(List<Light> lights, Camera camera){
+    public Matrix4f getProjectionMatrix(){
+        return projectionMatrix;
+    }
+
+    public void render(List<Light> lights, Camera camera, Vector4f clipPlane){
         prepare();
         shader.start();
+        shader.loadClipPlane(clipPlane);
         shader.loadSkyColour(RED,GREEN,BLUE);
         shader.loadLight(lights);
         shader.loadViewMatrix(camera);
         renderer.render(entities);
         shader.stop();
         terrainShader.start();
+        shader.loadClipPlane(clipPlane);
         terrainShader.loadSkyColour(RED,GREEN,BLUE);
         terrainShader.loadLight(lights);
         terrainShader.loadViewMatrix(camera);
@@ -73,6 +81,17 @@ public class MasterRenderer {
         skyboxRenderer.render(camera,RED,GREEN,BLUE);
         entities.clear();
         terrains.clear();
+    }
+
+    public void renderScene(List<Entity> entities,List<Terrain> terrains, List<Light> lights, Camera camera, Player player,Vector4f clipPlane){
+        processEntity(player);
+        for(Entity entity:entities){
+            processEntity(entity);
+        }
+        for(Terrain terrain:terrains){
+            processTerrain(terrain);
+        }
+        render(Light.findNearestLights(player.getPosition(),lights),camera,clipPlane);
     }
 
     public void processTerrain(Terrain terrain){

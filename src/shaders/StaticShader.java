@@ -5,6 +5,7 @@ import entities.Light;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
+import org.lwjgl.util.vector.Vector4f;
 import toolbox.Maths;
 
 import java.util.List;
@@ -26,6 +27,7 @@ public class StaticShader extends ShaderProgram {
     private int location_skyColour;
     private int location_numberOfRows;
     private int location_offset;
+    private int location_plane;
 
     public StaticShader() {
         super(VERTEX_FILE, FRAGMENT_FILE);
@@ -49,6 +51,7 @@ public class StaticShader extends ShaderProgram {
         location_skyColour=super.getUniformLocation("skyColour");
         location_numberOfRows=super.getUniformLocation("numberOfRows");
         location_offset=super.getUniformLocation("offset");
+        location_plane=super.getUniformLocation("plane");
         location_lightPosition=new int[super.MAX_LIGHT_NUM];
         location_lightColour=new int[super.MAX_LIGHT_NUM];
         location_attenuation=new int[super.MAX_LIGHT_NUM];
@@ -58,6 +61,10 @@ public class StaticShader extends ShaderProgram {
             location_attenuation[i]=super.getUniformLocation("attenuation["+i+"]");
 
         }
+    }
+
+    public void loadClipPlane(Vector4f plane){
+        loadVecter(location_plane, plane);
     }
 
     public void loadNumberOfRows(int rows){

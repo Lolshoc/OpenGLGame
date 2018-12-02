@@ -8,8 +8,11 @@ import guis.GuiRenderer;
 import guis.GuiTexture;
 import models.TexturedModel;
 import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
+import org.lwjgl.util.vector.Vector4f;
 import renderEngine.*;
 import models.RawModel;
 import shaders.StaticShader;
@@ -17,6 +20,11 @@ import terrains.Terrain;
 import textures.ModelTexture;
 import textures.TerrainTexture;
 import textures.TerrainTexturePack;
+import toolbox.MousePicker;
+import water.WaterFrameBuffers;
+import water.WaterRenderer;
+import water.WaterShader;
+import water.WaterTile;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -57,49 +65,17 @@ public class MainGameLoop {
         Terrain terrain2=new Terrain(-1,-1,loader,texturePack,blendMap, "heightmap");
         Terrain terrain3=new Terrain(0,0,loader,texturePack,blendMap,"heightmap");
         Terrain terrain4=new Terrain(-1,0,loader,texturePack,blendMap,"heightmap");
+        List<Terrain> terrains=new ArrayList<>();
+        terrains.add(terrain);
+        terrains.add(terrain2);
+        terrains.add(terrain3);
+        terrains.add(terrain4);
         List<Light> lights=new ArrayList<>();
         lights.add(new Light(new Vector3f(2000,1000,-7000),new Vector3f(1f,1f,1f),new Vector3f(0.001f,0.001f,0.001f)));
-        lights.add(new Light(new Vector3f(185,terrain.getHeightOfTerrain(185,-293),-293),new Vector3f(2,2,0),new Vector3f(1,0.01f,0.002f)));
-        //lights.add(new Light(new Vector3f(-3200,10,-3200),new Vector3f(10,0,0)));
-        //lights.add(new Light(new Vector3f(3200,10,-3200),new Vector3f(0,10,0)));
-        //lights.add(new Light(new Vector3f(0,10,3200),new Vector3f(0,0,10)));
+        //lights.add(new Light(new Vector3f(185,1000,-293),new Vector3f(1,1,1)));
         float x;
         float z;
         float y;
-        /*if(x>terrain.getX()&&z<terrain3.getZ()) {
-            y = terrain.getHeightOfTerrain(x, z);
-        }else if(x<terrain.getX()&&z<terrain3.getZ()){
-            y = terrain2.getHeightOfTerrain(x,z);
-        }else if(x<terrain.getX()&&z>terrain3.getZ()){
-            y=terrain4.getHeightOfTerrain(x,z);
-        }else{
-            y=terrain3.getHeightOfTerrain(x,z);
-        }
-        entities.add(new Entity(lamp,new Vector3f(x,y,z),0,0,0,1));
-        x=370;
-        z=-300;
-        if(x>terrain.getX()&&z<terrain3.getZ()) {
-            y = terrain.getHeightOfTerrain(x, z);
-        }else if(x<terrain.getX()&&z<terrain3.getZ()){
-            y = terrain2.getHeightOfTerrain(x,z);
-        }else if(x<terrain.getX()&&z>terrain3.getZ()){
-            y=terrain4.getHeightOfTerrain(x,z);
-        }else{
-            y=terrain3.getHeightOfTerrain(x,z);
-        }
-        entities.add(new Entity(lamp,new Vector3f(x,y,z),0,0,0,1));
-        x=293;
-        z=-305;
-        if(x>terrain.getX()&&z<terrain3.getZ()) {
-            y = terrain.getHeightOfTerrain(x, z);
-        }else if(x<terrain.getX()&&z<terrain3.getZ()){
-            y = terrain2.getHeightOfTerrain(x,z);
-        }else if(x<terrain.getX()&&z>terrain3.getZ()){
-            y=terrain4.getHeightOfTerrain(x,z);
-        }else{
-            y=terrain3.getHeightOfTerrain(x,z);
-        }
-        entities.add(new Entity(lamp,new Vector3f(x,y,z),0,0,0,1));*/
         Random random=new Random();
         for(int i=0;i<500;i++){
             if(i%2==0){
@@ -180,76 +156,53 @@ public class MainGameLoop {
         Camera camera=new Camera(player);
 
         List<GuiTexture> guis=new ArrayList<GuiTexture>();
-        //GuiTexture gui=new GuiTexture(loader.loadTexture("texture"),new Vector2f(0.5f,0.5f),new Vector2f(0.25f,0.25f));
-        //guis.add(gui);
         GuiRenderer guiRenderer=new GuiRenderer(loader);
-        float r=0.03f;
-        float g=0.03f;
-        float b=0.03f;
-        float oldr=0;
-        float oldg=0;
-        float oldb=0;
+        MousePicker mousePicker=new MousePicker(camera,renderer.getProjectionMatrix());
+        WaterFrameBuffers fbos=new WaterFrameBuffers();
+        WaterShader waterShader=new WaterShader();
+        WaterRenderer waterRenderer=new WaterRenderer(loader,waterShader,renderer.getProjectionMatrix(),fbos);
+        List<WaterTile> waters=new ArrayList<>();
+        waters.add(new WaterTile(0,0,0));
+        /*GuiTexture refraction=new GuiTexture(fbos.getRefractionTexture(),new Vector2f(0.5f,0.5f),new Vector2f(0.25f,0.25f));
+        GuiTexture reflection=new GuiTexture(fbos.getReflectionTexture(),new Vector2f(-0.5f,0.5f),new Vector2f(0.25f,0.25f));
+        guis.add(refraction);
+        guis.add(reflection);*/
+        float rate=0.03f;
+        float old=lights.get(0).getColour().x;
         while(!Display.isCloseRequested()){
-            if(player.getPosition().x>terrain.getX()&&player.getPosition().z<terrain3.getZ()) {
-                player.move(terrain);
-            }else if(player.getPosition().x<terrain.getX()&&player.getPosition().z<terrain3.getZ()){
-                player.move(terrain2);
-            }else if(player.getPosition().x<terrain.getX()&&player.getPosition().z>terrain3.getZ()){
-                player.move(terrain4);
-            }else {
-                player.move(terrain3);
-            }
-            if(player.getRotY()>180){
-                player.setRotY(player.getRotY()-360);
-            }else if(player.getRotY()<-180){
-                player.setRotY(player.getRotY()+360);
-            }/*
-            System.out.println(player.getRotY());
-            if(player.getRotY()<=45&&player.getRotY()>=-45){
-                lights.get(1).setPosition(new Vector3f(player.getPosition().x-100,10,player.getPosition().z+100));
-                lights.get(2).setPosition(new Vector3f(player.getPosition().x,10,player.getPosition().z-100));
-                lights.get(3).setPosition(new Vector3f(player.getPosition().x+100,player.getPosition().y+10,player.getPosition().z+100));
-            }else if(player.getRotY()>=45&&player.getRotY()<=135){
-                lights.get(1).setPosition(new Vector3f(player.getPosition().x-100,10,player.getPosition().z+100));
-                lights.get(2).setPosition(new Vector3f(player.getPosition().x+100,player.getPosition().y+10,player.getPosition().z));
-                lights.get(3).setPosition(new Vector3f(player.getPosition().x-100,player.getPosition().y+10,player.getPosition().z-100));
-            }else if(player.getRotY()>=-135&&player.getRotY()<=-45){
-                lights.get(1).setPosition(new Vector3f(player.getPosition().x,10,player.getPosition().z+100));
-                lights.get(2).setPosition(new Vector3f(player.getPosition().x+100,player.getPosition().y+10,player.getPosition().z-100));
-                lights.get(3).setPosition(new Vector3f(player.getPosition().x-100,player.getPosition().y+10,player.getPosition().z-100));
-            }else{
-                lights.get(1).setPosition(new Vector3f(player.getPosition().x-100,player.getPosition().y+10,player.getPosition().z-100));
-                lights.get(2).setPosition(new Vector3f(player.getPosition().x,10,player.getPosition().z+100));
-                lights.get(3).setPosition(new Vector3f(player.getPosition().x+100,player.getPosition().y+10,player.getPosition().z-100));
-
-            }*/
-            lights.get(0).setPosition(new Vector3f(player.getPosition().x,player.getPosition().y+100,player.getPosition().z));
-            lights.get(0).setColour(new Vector3f(oldr+r,oldg+g,oldb+b));
+            player.move(player.calculateTerrain(terrains));
+            player.limitRotation();
             if(lights.get(0).getColour().x>5){
-                r=-0.04f;
-                g=-0.04f;
-                b=-0.04f;
+                rate=-5/4f*DisplayManager.getDelta();
             }else if(lights.get(0).getColour().x<0){
-                r=0.04f;
-                g=0.04f;
-                b=0.04f;
+                rate=5/4f*DisplayManager.getDelta();
             }
-            oldr = lights.get(0).getColour().x;
-            oldg = lights.get(0).getColour().y;
-            oldb = lights.get(0).getColour().z;
+            Light.updateLight(lights.get(0),player,old,rate);
+            old = lights.get(0).getColour().x;
             camera.move();
-            renderer.processEntity(player);
-            for(Entity entity:entities){
-                renderer.processEntity(entity);
-            }
-            renderer.processTerrain(terrain);
-            renderer.processTerrain(terrain2);
-            renderer.processTerrain(terrain3);
-            renderer.processTerrain(terrain4);
-            renderer.render(Light.findNearestLights(player.getPosition(),lights),camera);
+            mousePicker.update();
+            GL11.glEnable(GL30.GL_CLIP_DISTANCE0);
+            //reflection
+            fbos.bindReflectionFrameBuffer();
+            float distance=2*camera.getPosition().y-waters.get(0).getHeight();
+            camera.getPosition().y-=distance;
+            camera.invertPitch();
+            renderer.renderScene(entities,terrains,lights,camera,player,new Vector4f(0,1,0,-waters.get(0).getHeight()+1f));
+            camera.getPosition().y+=distance;
+            camera.invertPitch();
+            //refraction
+            fbos.bindRefractionFrameBuffer();
+            renderer.renderScene(entities,terrains,lights,camera,player,new Vector4f(0,-1,0,waters.get(0).getHeight()+1f));
+            //regular
+            GL11.glDisable(GL30.GL_CLIP_DISTANCE0);
+            fbos.unbindCurrentFrameBuffer();
+            renderer.renderScene(entities,terrains,lights,camera,player,new Vector4f(0,-1,0,100000));
+            waterRenderer.render(waters,camera, lights.get(0));
             guiRenderer.render(guis);
             DisplayManager.updateDisplay();
         }
+        fbos.cleanUp();
+        waterShader.cleanUp();
         guiRenderer.cleanUp();
         renderer.cleanUp();
         loader.cleanUp();
