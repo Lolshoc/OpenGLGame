@@ -23,6 +23,7 @@ public class WaterShader extends ShaderProgram {
 	private int location_lightColor;
 	private int location_lightPosition;
 	private int location_depthMap;
+	private int location_visiblilty;
 
 	public WaterShader() {
 		super(VERTEX_FILE, FRAGMENT_FILE);
@@ -47,6 +48,7 @@ public class WaterShader extends ShaderProgram {
 		location_lightColor=getUniformLocation("lightColor");
 		location_lightPosition=getUniformLocation("lightPosition");
 		location_depthMap=getUniformLocation("depthMap");
+		location_visiblilty=getUniformLocation("visibility");
 	}
 
 	public void loadMoveFactor(float value){
@@ -59,6 +61,10 @@ public class WaterShader extends ShaderProgram {
 		super.loadInt(location_dudvMap,2);
 		super.loadInt(location_normalMap,3);
 		super.loadInt(location_depthMap,4);
+	}
+
+	public void loadVisibility(float value){
+		super.loadFloat(location_visiblilty,value);
 	}
 
 	public void loadLight(Light sun){
