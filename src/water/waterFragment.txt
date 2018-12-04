@@ -57,7 +57,7 @@ void main(void) {
 
     vec3 viewVector = normalize(toCameraVector);
     float reflectiveFactor = dot(viewVector,normal);
-    reflectiveFactor = pow(reflectiveFactor, 5.0);
+    reflectiveFactor = pow(reflectiveFactor, 10.0);
 
     vec3 reflectedLight = reflect(normalize(fromLightVector), normal);
     float specular = max(dot(reflectedLight, viewVector), 0.0);
@@ -65,7 +65,7 @@ void main(void) {
     vec3 specularHighlights = lightColor * specular * reflectivity * clamp(waterDepth/5.0, 0.0, 1.0);
 
 	out_Color = mix(reflectionColor,refractionColor,reflectiveFactor);
-	out_Color = mix(out_Color, vec4(0.0, 0., 0.5, 1.0), visibility/25.0) + vec4(specularHighlights, 0.0);
+	out_Color = mix(out_Color, vec4(0.0, 0.0, 0.3, 1.0), visibility/25.0) + vec4(specularHighlights, 0.0);
 	out_Color.a = clamp(waterDepth/5.0, 0.0, 1.0);
 
 }
