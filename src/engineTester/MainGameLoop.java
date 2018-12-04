@@ -7,6 +7,7 @@ import entities.Player;
 import guis.GuiRenderer;
 import guis.GuiTexture;
 import models.TexturedModel;
+import normalMappingObjConverter.NormalMappedObjLoader;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
@@ -38,6 +39,7 @@ public class MainGameLoop {
         DisplayManager.createDisplay();
         Loader loader=new Loader();
         List<Entity> entities=new ArrayList<Entity>();
+        List<Entity> normalMappedEntities=new ArrayList<>();
 
         TerrainTexture backgroundTexture=new TerrainTexture(loader.loadTexture("grassy2"));
         TerrainTexture rTexture=new TerrainTexture(loader.loadTexture("mud"));
@@ -73,6 +75,9 @@ public class MainGameLoop {
         List<Light> lights=new ArrayList<>();
         lights.add(new Light(new Vector3f(2000,1000,-7000),new Vector3f(1f,1f,1f),new Vector3f(0.001f,0.001f,0.001f)));
         //lights.add(new Light(new Vector3f(185,1000,-293),new Vector3f(1,1,1)));
+        TexturedModel boulder = new TexturedModel(NormalMappedObjLoader.loadOBJ("boulder",loader),new ModelTexture((loader.loadTexture("boulder"))));
+        boulder.getTexture().setNormalMapID(loader.loadTexture("boulderNormal"));
+        normalMappedEntities.add(new Entity(boulder,new Vector3f(75,10,-75),0,0,0,1));
         float x;
         float z;
         float y;
@@ -187,16 +192,16 @@ public class MainGameLoop {
             float distance=2*camera.getPosition().y-waters.get(0).getHeight();
             camera.getPosition().y-=distance;
             camera.invertPitch();
-            renderer.renderScene(entities,terrains,lights,camera,player,new Vector4f(0,1,0,-waters.get(0).getHeight()+1f));
+            renderer.renderScene(normalMappedEntities,entities,terrains,lights,camera,player,new Vector4f(0,1,0,-waters.get(0).getHeight()+1f));
             camera.getPosition().y+=distance;
             camera.invertPitch();
             //refraction
             fbos.bindRefractionFrameBuffer();
-            renderer.renderScene(entities,terrains,lights,camera,player,new Vector4f(0,-1,0,waters.get(0).getHeight()+1f));
+            renderer.renderScene(normalMappedEntities,entities,terrains,lights,camera,player,new Vector4f(0,-1,0,waters.get(0).getHeight()+1f));
             //regular
             GL11.glDisable(GL30.GL_CLIP_DISTANCE0);
             fbos.unbindCurrentFrameBuffer();
-            renderer.renderScene(entities,terrains,lights,camera,player,new Vector4f(0,-1,0,100000));
+            renderer.renderScene(normalMappedEntities,entities,terrains,lights,camera,player,new Vector4f(0,-1,0,100000));
             waterRenderer.render(waters,camera, lights.get(0));
             guiRenderer.render(guis);
             DisplayManager.updateDisplay();
