@@ -77,12 +77,34 @@ public class MainGameLoop {
         //lights.add(new Light(new Vector3f(185,1000,-293),new Vector3f(1,1,1)));
         TexturedModel boulder = new TexturedModel(NormalMappedObjLoader.loadOBJ("boulder",loader),new ModelTexture((loader.loadTexture("boulder"))));
         boulder.getTexture().setNormalMapID(loader.loadTexture("boulderNormal"));
-        normalMappedEntities.add(new Entity(boulder,new Vector3f(75,10,-75),0,0,0,1));
         float x;
         float z;
         float y;
+        float scale;
         Random random=new Random();
         for(int i=0;i<500;i++){
+            if(i%2==0){
+                x=random.nextFloat()*3200-1600;
+                z=random.nextFloat()*3200-1600;
+            }else {
+                x = random.nextFloat() * 1600 - 800;
+                z = random.nextFloat() * 1600 - 800;
+            }
+            if(x>terrain.getX()&&z<terrain3.getZ()) {
+                y = terrain.getHeightOfTerrain(x, z);
+            }else if(x<terrain.getX()&&z<terrain3.getZ()){
+                y = terrain2.getHeightOfTerrain(x,z);
+            }else if(x<terrain.getX()&&z>terrain3.getZ()){
+                y=terrain4.getHeightOfTerrain(x,z);
+            }else{
+                y=terrain3.getHeightOfTerrain(x,z);
+            }
+            if(i%5==0) {
+                scale = random.nextFloat() * 4 + 1f;
+            }else{
+                scale = random.nextFloat() * 2 + 1f;
+            }
+            normalMappedEntities.add(new Entity(boulder,new Vector3f(x,y+(random.nextFloat() * 4 - 2) * scale,z),random.nextFloat() * 360,random.nextFloat()*360,random.nextFloat()*360,scale));
             if(i%2==0){
                 x=random.nextFloat()*3200-1600;
                 z=random.nextFloat()*3200-1600;
