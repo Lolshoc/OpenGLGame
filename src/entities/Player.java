@@ -50,7 +50,7 @@ public class Player extends Entity {
         }
     }
 
-    public void checkInputs(){
+    private void checkInputs(){
         if(Keyboard.isKeyDown(Keyboard.KEY_W)){
             this.currentSpeed=RUN_SPEED;
         }else if(Keyboard.isKeyDown(Keyboard.KEY_S)){
@@ -90,5 +90,4 @@ public class Player extends Entity {
         }else if(getRotY()<-180){
             setRotY(getRotY()+360);
         }
-    }
-}
+    }}

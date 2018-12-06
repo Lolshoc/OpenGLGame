@@ -45,7 +45,6 @@ public class MainGameLoop {
         TerrainTexture rTexture=new TerrainTexture(loader.loadTexture("mud"));
         TerrainTexture gTexture=new TerrainTexture(loader.loadTexture("grassFlowers"));
         TerrainTexture bTexture=new TerrainTexture(loader.loadTexture("path"));
-
         TerrainTexturePack texturePack=new TerrainTexturePack(backgroundTexture,rTexture,gTexture,bTexture);
         TerrainTexture blendMap=new TerrainTexture(loader.loadTexture("blendMap"));
 
@@ -63,6 +62,7 @@ public class MainGameLoop {
         TexturedModel lowPolyTree=new TexturedModel(OBJLoader.loadObjModel("lowPolyTree",loader,false),new ModelTexture(loader.loadTexture("lowPolyTree")));
         TexturedModel lamp=new TexturedModel(OBJLoader.loadObjModel("lamp",loader,false),new ModelTexture(loader.loadTexture("lamp")));
         lamp.getTexture().setUseFakeLighting(true);
+
         Terrain terrain=new Terrain(0,-1,loader,texturePack,blendMap, "heightmap");
         Terrain terrain2=new Terrain(-1,-1,loader,texturePack,blendMap, "heightmap");
         Terrain terrain3=new Terrain(0,0,loader,texturePack,blendMap,"heightmap");
@@ -72,11 +72,14 @@ public class MainGameLoop {
         terrains.add(terrain2);
         terrains.add(terrain3);
         terrains.add(terrain4);
+
         List<Light> lights=new ArrayList<>();
         lights.add(new Light(new Vector3f(2000,1000,-7000),new Vector3f(1f,1f,1f),new Vector3f(0.001f,0.001f,0.001f)));
         //lights.add(new Light(new Vector3f(185,1000,-293),new Vector3f(1,1,1)));
+
         TexturedModel boulder = new TexturedModel(NormalMappedObjLoader.loadOBJ("boulder",loader),new ModelTexture((loader.loadTexture("boulder"))));
         boulder.getTexture().setNormalMapID(loader.loadTexture("boulderNormal"));
+
         float x;
         float z;
         float y;
