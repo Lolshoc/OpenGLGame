@@ -18,7 +18,7 @@ public class DisplayManager {
         try {
             Display.setDisplayMode(new DisplayMode(WIDTH, HEIGHT));
             Display.create();
-            Display.setTitle("OpenGL Game");
+            Display.setTitle("The Night Is Dark!");
         }catch (LWJGLException e){
             e.printStackTrace();
         }
