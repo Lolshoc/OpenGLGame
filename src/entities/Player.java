@@ -73,15 +73,30 @@ public class Player extends Entity {
     }
 
     public Terrain calculateTerrain(List<Terrain> terrains){
-        if(getPosition().x>terrains.get(0).getX()&&getPosition().z<terrains.get(2).getZ()) {
-            return terrains.get(0);
-        }else if(getPosition().x<terrains.get(0).getX()&&getPosition().z<terrains.get(2).getZ()){
-            return terrains.get(1);
-        }else if(getPosition().x<terrains.get(0).getX()&getPosition().z>terrains.get(2).getZ()){
-            return terrains.get(3);
-        }else {
-            return terrains.get(2);
+        boolean x;
+        boolean z;
+        for(Terrain terrain:terrains) {
+            x = false;
+            z = false;
+            if (terrain.getX() == 0) {
+                if(getPosition().x >= 0){
+                    x = true;
+                }
+            }else if(Math.abs((int)getPosition().x / (int)terrain.getX()) == 0){
+                x = true;
+            }
+            if(terrain.getZ() == 0) {
+                if (getPosition().z >= 0){
+                    z = true;
+                }
+            }else if(Math.abs((int)getPosition().z / (int)terrain.getZ()) == 0){
+                z = true;
+            }
+            if(x && z){
+                return terrain;
+            }
         }
+        return terrains.get(0);
     }
 
     public void limitRotation(){

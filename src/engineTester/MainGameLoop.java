@@ -38,175 +38,103 @@ import java.util.Random;
 
 public class MainGameLoop {
 
+    private Loader loader;
+    private MasterRenderer renderer;
+    private Camera camera;
+    private MousePicker mousePicker;
+    private GuiRenderer guiRenderer;
+    private WaterRenderer waterRenderer;
+    private List<Entity> normalMappedEntities = new ArrayList<>(), entities = new ArrayList<>();
+    private List<Light> lights = new ArrayList<>();
+    private List<Terrain> terrains = new ArrayList<>();
+    private List<GuiTexture> guis=new ArrayList<>();
+    private TerrainTexture backgroundTexture;
+    private TerrainTexture rTexture;
+    private TerrainTexture gTexture;
+    private TerrainTexture bTexture;
+    private TerrainTexturePack texturePack;
+    private TerrainTexture blendMap;
+    private TexturedModel tree;
+    private TexturedModel grass;
+    private TexturedModel fern;
+    private TexturedModel flower;
+    private TexturedModel lowPolyTree;
+    private TexturedModel boulder;
+    private TexturedModel lamp;
+    private Player player;
+    private WaterFrameBuffers fbos;
+    private WaterShader waterShader;
+    private List<WaterTile> waters=new ArrayList<>();
+
     public static void main(String[] args) throws FileNotFoundException {
 
         DisplayManager.createDisplay();
         Loader loader=new Loader();
-        TextMaster.init(loader);
-
-        FontType font = new FontType(loader.loadTexture("harrington"),new File("res/harrington.fnt"));
-        GUIText text = new GUIText("Hello world!",1,font,new Vector2f(0,0),1f,false);
-        text.setColour(1,1,1);
-
-        List<Entity> entities=new ArrayList<Entity>();
-        List<Entity> normalMappedEntities=new ArrayList<>();
-
         TerrainTexture backgroundTexture=new TerrainTexture(loader.loadTexture("grassy2"));
         TerrainTexture rTexture=new TerrainTexture(loader.loadTexture("mud"));
         TerrainTexture gTexture=new TerrainTexture(loader.loadTexture("grassFlowers"));
         TerrainTexture bTexture=new TerrainTexture(loader.loadTexture("path"));
         TerrainTexturePack texturePack=new TerrainTexturePack(backgroundTexture,rTexture,gTexture,bTexture);
         TerrainTexture blendMap=new TerrainTexture(loader.loadTexture("blendMap"));
-
-        RawModel model= OBJLoader.loadObjModel("pine", loader,false);
-        TexturedModel tree=new TexturedModel(model,new ModelTexture(loader.loadTexture("pine")));
+        TexturedModel tree=new TexturedModel(OBJLoader.loadObjModel("pine", loader,false),new ModelTexture(loader.loadTexture("pine")));
         TexturedModel grass=new TexturedModel(OBJLoader.loadObjModel("grassModel",loader,false),new ModelTexture(loader.loadTexture("grassTexture")));
-        grass.getTexture().setHasTransparency(true);
-        grass.getTexture().setUseFakeLighting(true);
         TexturedModel fern=new TexturedModel(OBJLoader.loadObjModel("fern",loader,false),new ModelTexture(loader.loadTexture("fern")));
-        fern.getTexture().setHasTransparency(true);
-        fern.getTexture().setNumberOfRows(2);
         TexturedModel flower=new TexturedModel(OBJLoader.loadObjModel("grassModel",loader,false),new ModelTexture(loader.loadTexture("flower")));
-        flower.getTexture().setUseFakeLighting(true);
-        flower.getTexture().setHasTransparency(true);
         TexturedModel lowPolyTree=new TexturedModel(OBJLoader.loadObjModel("lowPolyTree",loader,false),new ModelTexture(loader.loadTexture("lowPolyTree")));
-        TexturedModel lamp=new TexturedModel(OBJLoader.loadObjModel("lamp",loader,false),new ModelTexture(loader.loadTexture("lamp")));
-        lamp.getTexture().setUseFakeLighting(true);
-
-        Terrain terrain=new Terrain(0,-1,loader,texturePack,blendMap, "heightmap");
-        Terrain terrain2=new Terrain(-1,-1,loader,texturePack,blendMap, "heightmap");
-        Terrain terrain3=new Terrain(0,0,loader,texturePack,blendMap,"heightmap");
-        Terrain terrain4=new Terrain(-1,0,loader,texturePack,blendMap,"heightmap");
-        List<Terrain> terrains=new ArrayList<>();
-        terrains.add(terrain);
-        terrains.add(terrain2);
-        terrains.add(terrain3);
-        terrains.add(terrain4);
-
-        List<Light> lights=new ArrayList<>();
-        lights.add(new Light(new Vector3f(2000,1000,-7000),new Vector3f(1f,1f,1f),new Vector3f(0.001f,0.001f,0.001f)));
-        //lights.add(new Light(new Vector3f(185,1000,-293),new Vector3f(1,1,1)));
-
         TexturedModel boulder = new TexturedModel(NormalMappedObjLoader.loadOBJ("boulder",loader),new ModelTexture((loader.loadTexture("boulder"))));
-        boulder.getTexture().setNormalMapID(loader.loadTexture("boulderNormal"));
-
-        float x;
-        float z;
-        float y;
-        float scale;
-        Random random=new Random();
-        for(int i=0;i<500;i++){
-            if(i%2==0){
-                x=random.nextFloat()*3200-1600;
-                z=random.nextFloat()*3200-1600;
-            }else {
-                x = random.nextFloat() * 1600 - 800;
-                z = random.nextFloat() * 1600 - 800;
-            }
-            if(x>terrain.getX()&&z<terrain3.getZ()) {
-                y = terrain.getHeightOfTerrain(x, z);
-            }else if(x<terrain.getX()&&z<terrain3.getZ()){
-                y = terrain2.getHeightOfTerrain(x,z);
-            }else if(x<terrain.getX()&&z>terrain3.getZ()){
-                y=terrain4.getHeightOfTerrain(x,z);
-            }else{
-                y=terrain3.getHeightOfTerrain(x,z);
-            }
-            if(i%5==0) {
-                scale = random.nextFloat() * 4 + 1f;
-            }else{
-                scale = random.nextFloat() * 2 + 1f;
-            }
-            normalMappedEntities.add(new Entity(boulder,new Vector3f(x,y+(random.nextFloat() * 4 - 2) * scale,z),random.nextFloat() * 360,random.nextFloat()*360,random.nextFloat()*360,scale));
-            if(i%2==0){
-                x=random.nextFloat()*3200-1600;
-                z=random.nextFloat()*3200-1600;
-            }else {
-                x = random.nextFloat() * 1600 - 800;
-                z = random.nextFloat() * 1600 - 800;
-            }
-            if(x>terrain.getX()&&z<terrain3.getZ()) {
-                y = terrain.getHeightOfTerrain(x, z);
-            }else if(x<terrain.getX()&&z<terrain3.getZ()){
-                y = terrain2.getHeightOfTerrain(x,z);
-            }else if(x<terrain.getX()&&z>terrain3.getZ()){
-                y=terrain4.getHeightOfTerrain(x,z);
-            }else{
-                y=terrain3.getHeightOfTerrain(x,z);
-            }
-            if(i%5==0){
-                entities.add(new Entity(lamp,new Vector3f(x,y,z),0,0,0,1));
-                lights.add(new Light(new Vector3f(x,y+16,z),new Vector3f(2,2,0),new Vector3f(1f,0.01f,0.002f)));
-            }
-            if(i%2==0){
-                x=random.nextFloat()*3200-1600;
-                z=random.nextFloat()*3200-1600;
-            }else {
-                x = random.nextFloat() * 1600 - 800;
-                z = random.nextFloat() * 1600 - 800;
-            }
-            if(x>terrain.getX()&&z<terrain3.getZ()) {
-                y = terrain.getHeightOfTerrain(x, z);
-            }else if(x<terrain.getX()&&z<terrain3.getZ()){
-                y = terrain2.getHeightOfTerrain(x,z);
-            }else if(x<terrain.getX()&&z>terrain3.getZ()){
-                y=terrain4.getHeightOfTerrain(x,z);
-            }else{
-                y=terrain3.getHeightOfTerrain(x,z);
-            }
-            entities.add(new Entity(tree,new Vector3f(x,y,z),0,0,0,random.nextFloat()*4+1));
-            if(i%2==0){
-                x=random.nextFloat()*3200-1600;
-                z=random.nextFloat()*3200-1600;
-            }else {
-                x = random.nextFloat() * 1600 - 800;
-                z = random.nextFloat() * 1600 - 800;
-            }
-            if(x>terrain.getX()&&z<terrain3.getZ()) {
-                y = terrain.getHeightOfTerrain(x, z);
-            }else if(x<terrain.getX()&&z<terrain3.getZ()){
-                y = terrain2.getHeightOfTerrain(x,z);
-            }else if(x<terrain.getX()&&z>terrain3.getZ()){
-                y=terrain4.getHeightOfTerrain(x,z);
-            }else{
-                y=terrain3.getHeightOfTerrain(x,z);
-            }
-            entities.add(new Entity(fern,random.nextInt(4),new Vector3f(x,y,z),0,random.nextFloat()*360,0,random.nextFloat()*0.5f+2));
-            if(i%2==0){
-                x=random.nextFloat()*3200-1600;
-                z=random.nextFloat()*3200-1600;
-            }else {
-                x = random.nextFloat() * 1600 - 800;
-                z = random.nextFloat() * 1600 - 800;
-            }
-            if(x>terrain.getX()&&z<terrain3.getZ()) {
-                y = terrain.getHeightOfTerrain(x, z);
-            }else if(x<terrain.getX()&&z<terrain3.getZ()){
-                y = terrain2.getHeightOfTerrain(x,z);
-            }else if(x<terrain.getX()&&z>terrain3.getZ()){
-                y=terrain4.getHeightOfTerrain(x,z);
-            }else{
-                y=terrain3.getHeightOfTerrain(x,z);
-            }
-            entities.add(new Entity(lowPolyTree,new Vector3f(x,y,z),0,random.nextFloat()*360,0,random.nextFloat()*0.5f+1f));
-        }
+        TexturedModel lamp=new TexturedModel(OBJLoader.loadObjModel("lamp",loader,false),new ModelTexture(loader.loadTexture("lamp")));
+        Player player=new Player(new TexturedModel(OBJLoader.loadObjModel("stanfordBunny",loader,true),new ModelTexture(loader.loadTexture("white"))),new Vector3f(0,0,0),0,0,0,0.75f);
         MasterRenderer renderer=new MasterRenderer(loader);
-        TexturedModel bunny=new TexturedModel(OBJLoader.loadObjModel("stanfordBunny",loader,true),new ModelTexture(loader.loadTexture("white")));
-        Player player=new Player(bunny,new Vector3f(100,0,-50),0,180,0,0.75f);
         Camera camera=new Camera(player);
-
-        List<GuiTexture> guis=new ArrayList<GuiTexture>();
-        GuiRenderer guiRenderer=new GuiRenderer(loader);
         MousePicker mousePicker=new MousePicker(camera,renderer.getProjectionMatrix());
+        GuiRenderer guiRenderer=new GuiRenderer(loader);
         WaterFrameBuffers fbos=new WaterFrameBuffers();
         WaterShader waterShader=new WaterShader();
         WaterRenderer waterRenderer=new WaterRenderer(loader,waterShader,renderer.getProjectionMatrix(),fbos);
-        List<WaterTile> waters=new ArrayList<>();
-        waters.add(new WaterTile(0,0,0));
-        /*GuiTexture refraction=new GuiTexture(fbos.getRefractionTexture(),new Vector2f(0.5f,0.5f),new Vector2f(0.25f,0.25f));
-        GuiTexture reflection=new GuiTexture(fbos.getReflectionTexture(),new Vector2f(-0.5f,0.5f),new Vector2f(0.25f,0.25f));
-        guis.add(refraction);
-        guis.add(reflection);*/
+        new MainGameLoop(loader,renderer,camera,mousePicker,guiRenderer,waterRenderer,backgroundTexture,rTexture,gTexture,bTexture,texturePack,blendMap,tree,grass,fern,flower,lowPolyTree,boulder,lamp,player,fbos,waterShader);
+
+    }
+
+    public MainGameLoop(Loader loader, MasterRenderer renderer, Camera camera, MousePicker mousePicker, GuiRenderer guiRenderer, WaterRenderer waterRenderer, TerrainTexture backgroundTexture, TerrainTexture rTexture, TerrainTexture gTexture, TerrainTexture bTexture, TerrainTexturePack texturePack, TerrainTexture blendMap, TexturedModel tree, TexturedModel grass, TexturedModel fern, TexturedModel flower, TexturedModel lowPolyTree, TexturedModel boulder, TexturedModel lamp, Player player, WaterFrameBuffers fbos, WaterShader waterShader) {
+        this.loader = loader;
+        this.renderer = renderer;
+        this.camera = camera;
+        this.mousePicker = mousePicker;
+        this.guiRenderer = guiRenderer;
+        this.waterRenderer = waterRenderer;
+        this.backgroundTexture = backgroundTexture;
+        this.rTexture = rTexture;
+        this.gTexture = gTexture;
+        this.bTexture = bTexture;
+        this.texturePack = texturePack;
+        this.blendMap = blendMap;
+        this.tree = tree;
+        this.grass = grass;
+        this.fern = fern;
+        this.flower = flower;
+        this.lowPolyTree = lowPolyTree;
+        this.boulder = boulder;
+        this.lamp = lamp;
+        this.player = player;
+        this.fbos = fbos;
+        this.waterShader = waterShader;
+        menu();
+    }
+
+    private void menu(){
+        //main menu code goes here
+        initGame();
+    }
+
+    private void initGame(){
+        initEntitiies();
+        TextMaster.init(loader);
+        loadText("Hello world!",1,new Vector2f(0,0),1,false,new Vector3f(1,1,1));
+        gameLogic();
+        exit();
+    }
+
+    private void gameLogic(){
         float rate=0.03f;
         float old=lights.get(0).getColour().x;
         while(!Display.isCloseRequested()){
@@ -242,6 +170,140 @@ public class MainGameLoop {
             TextMaster.render();
             DisplayManager.updateDisplay();
         }
+    }
+
+    private void generateTerrain(int worldX, int worldZ){
+        Terrain terrain = new Terrain(worldX,worldZ,loader,texturePack,blendMap,"heightMap");
+        float centerX = 800;
+        if (worldX < 0){
+            centerX = -800;
+        }
+        float centerZ = 800;
+        if (worldX < 0){
+            centerZ = -800;
+        }
+        waters.add(new WaterTile(worldX*1600+centerX,worldZ*1600+centerZ,0));
+        terrains.add(terrain);
+        generateEntities(terrain);
+    }
+
+    private void generateEntities(Terrain terrain){
+        float x;
+        float z;
+        float y;
+        float scale;
+        Random random=new Random();
+        for(int i=0;i<125;i++){
+            if(i%5==0) {
+                scale = random.nextFloat() * 4 + 1f;
+            }else{
+                scale = random.nextFloat() * 2 + 1f;
+            }
+            if(i%2==0){
+                x = random.nextFloat() * 1600;
+                z = random.nextFloat() * 1600;
+            }else {
+                x = random.nextFloat() * 800;
+                z = random.nextFloat() * 800;
+            }
+            if(terrain.getX()!=0) {
+                x += terrain.getX();
+            }
+            if(terrain.getZ()!=0) {
+                z += terrain.getZ();
+            }
+            y = terrain.getHeightOfTerrain(x, z);
+            normalMappedEntities.add(new Entity(boulder,new Vector3f(x,y+(random.nextFloat() * 4 - 2) * scale,z),random.nextFloat() * 360,random.nextFloat()*360,random.nextFloat()*360,scale));
+            if(i%2==0){
+                x = random.nextFloat() * 1600;
+                z = random.nextFloat() * 1600;
+            }else {
+                x = random.nextFloat() * 800;
+                z = random.nextFloat() * 800;
+            }if(terrain.getX()!=0) {
+                x += terrain.getX();
+            }
+            if(terrain.getZ()!=0) {
+                z += terrain.getZ();
+            }
+            y = terrain.getHeightOfTerrain(x, z);
+            if(i%5==0){
+                entities.add(new Entity(lamp,new Vector3f(x,y,z),0,0,0,1));
+                lights.add(new Light(new Vector3f(x,y+16,z),new Vector3f(2,2,0),new Vector3f(1f,0.01f,0.002f)));
+            }
+            if(i%2==0){
+                x = random.nextFloat() * 1600;
+                z = random.nextFloat() * 1600;
+            }else {
+                x = random.nextFloat() * 800;
+                z = random.nextFloat() * 800;
+            }if(terrain.getX()!=0) {
+                x += terrain.getX();
+            }
+            if(terrain.getZ()!=0) {
+                z += terrain.getZ();
+            }
+            y = terrain.getHeightOfTerrain(x, z);
+            entities.add(new Entity(tree,new Vector3f(x,y,z),0,0,0,random.nextFloat()*4+1));
+            if(i%2==0){
+                x = random.nextFloat() * 1600;
+                z = random.nextFloat() * 1600;
+            }else {
+                x = random.nextFloat() * 800;
+                z = random.nextFloat() * 800;
+            }if(terrain.getX()!=0) {
+                x += terrain.getX();
+            }
+            if(terrain.getZ()!=0) {
+                z += terrain.getZ();
+            }
+            y = terrain.getHeightOfTerrain(x, z);
+            entities.add(new Entity(fern,random.nextInt(4),new Vector3f(x,y,z),0,random.nextFloat()*360,0,random.nextFloat()*0.5f+2));
+            if(i%2==0){
+                x = random.nextFloat() * 1600;
+                z = random.nextFloat() * 1600;
+            }else {
+                x = random.nextFloat() * 800;
+                z = random.nextFloat() * 800;
+            }if(terrain.getX()!=0) {
+                x += terrain.getX();
+            }
+            if(terrain.getZ()!=0) {
+                z += terrain.getZ();
+            }
+            y = terrain.getHeightOfTerrain(x, z);
+            entities.add(new Entity(lowPolyTree,new Vector3f(x,y,z),0,random.nextFloat()*360,0,random.nextFloat()*0.5f+1f));
+        }
+    }
+
+    private void initEntitiies(){
+        lights.add(new Light(new Vector3f(2000,1000,-7000),new Vector3f(1f,1f,1f),new Vector3f(0.001f,0.001f,0.001f)));
+        //lights.add(new Light(new Vector3f(185,1000,-293),new Vector3f(1,1,1)));
+        grass.getTexture().setHasTransparency(true);
+        grass.getTexture().setUseFakeLighting(true);
+        fern.getTexture().setHasTransparency(true);
+        fern.getTexture().setNumberOfRows(2);
+        flower.getTexture().setUseFakeLighting(true);
+        flower.getTexture().setHasTransparency(true);
+        lamp.getTexture().setUseFakeLighting(true);
+        boulder.getTexture().setNormalMapID(loader.loadTexture("boulderNormal"));float x;
+        generateTerrain(0,0);
+        generateTerrain(-1,0);
+        generateTerrain(0,-1);
+        generateTerrain(-1,-1);
+    }
+
+    private void pause(){
+        //pause menu code goes here
+    }
+
+    private void loadText(String words,float size, Vector2f position, float length, boolean center, Vector3f color){
+        FontType font = new FontType(loader.loadTexture("harrington"),new File("res/harrington.fnt"));
+        GUIText text = new GUIText(words,size,font,position,length,center);
+        text.setColour(color.x,color.y,color.z);
+    }
+
+    private void exit(){
         TextMaster.cleanUp();
         fbos.cleanUp();
         waterShader.cleanUp();
@@ -249,7 +311,6 @@ public class MainGameLoop {
         renderer.cleanUp();
         loader.cleanUp();
         DisplayManager.closeDisplay();
-
     }
 
 }
