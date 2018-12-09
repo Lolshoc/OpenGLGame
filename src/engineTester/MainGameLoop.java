@@ -4,6 +4,9 @@ import entities.Camera;
 import entities.Entity;
 import entities.Light;
 import entities.Player;
+import fontMeshCreator.FontType;
+import fontMeshCreator.GUIText;
+import fontRendering.TextMaster;
 import guis.GuiRenderer;
 import guis.GuiTexture;
 import models.TexturedModel;
@@ -27,6 +30,7 @@ import water.WaterRenderer;
 import water.WaterShader;
 import water.WaterTile;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +42,12 @@ public class MainGameLoop {
 
         DisplayManager.createDisplay();
         Loader loader=new Loader();
+        TextMaster.init(loader);
+
+        FontType font = new FontType(loader.loadTexture("harrington"),new File("res/harrington.fnt"));
+        GUIText text = new GUIText("Hello world!",1,font,new Vector2f(0,0),1f,false);
+        text.setColour(1,1,1);
+
         List<Entity> entities=new ArrayList<Entity>();
         List<Entity> normalMappedEntities=new ArrayList<>();
 
@@ -48,8 +58,8 @@ public class MainGameLoop {
         TerrainTexturePack texturePack=new TerrainTexturePack(backgroundTexture,rTexture,gTexture,bTexture);
         TerrainTexture blendMap=new TerrainTexture(loader.loadTexture("blendMap"));
 
-        RawModel model= OBJLoader.loadObjModel("tree", loader,false);
-        TexturedModel tree=new TexturedModel(model,new ModelTexture(loader.loadTexture("tree")));
+        RawModel model= OBJLoader.loadObjModel("pine", loader,false);
+        TexturedModel tree=new TexturedModel(model,new ModelTexture(loader.loadTexture("pine")));
         TexturedModel grass=new TexturedModel(OBJLoader.loadObjModel("grassModel",loader,false),new ModelTexture(loader.loadTexture("grassTexture")));
         grass.getTexture().setHasTransparency(true);
         grass.getTexture().setUseFakeLighting(true);
@@ -144,7 +154,7 @@ public class MainGameLoop {
             }else{
                 y=terrain3.getHeightOfTerrain(x,z);
             }
-            entities.add(new Entity(tree,new Vector3f(x,y,z),0,0,0,random.nextFloat()*4+12));
+            entities.add(new Entity(tree,new Vector3f(x,y,z),0,0,0,random.nextFloat()*4+1));
             if(i%2==0){
                 x=random.nextFloat()*3200-1600;
                 z=random.nextFloat()*3200-1600;
@@ -229,8 +239,10 @@ public class MainGameLoop {
             renderer.renderScene(normalMappedEntities,entities,terrains,lights,camera,player,new Vector4f(0,-1,0,100000));
             waterRenderer.render(waters,camera, lights.get(0));
             guiRenderer.render(guis);
+            TextMaster.render();
             DisplayManager.updateDisplay();
         }
+        TextMaster.cleanUp();
         fbos.cleanUp();
         waterShader.cleanUp();
         guiRenderer.cleanUp();
