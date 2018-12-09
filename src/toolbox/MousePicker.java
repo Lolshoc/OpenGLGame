@@ -61,4 +61,12 @@ public class MousePicker {
         return new Vector2f(x,y);
     }
 
+    public static boolean checkIfOnButton(Vector2f topLeft, Vector2f bottomRight){
+        float x = (float)Mouse.getX()/Display.getWidth();
+        float y = (float)Mouse.getY()/Display.getHeight();
+        x = x*2 - 1;
+        y = y*2 - 1;
+        return (x>topLeft.x && x<bottomRight.x && y<topLeft.y && y>bottomRight.y);
+    }
+
 }

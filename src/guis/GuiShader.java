@@ -10,6 +10,7 @@ public class GuiShader extends ShaderProgram{
     private static final String FRAGMENT_FILE = "src/guis/guiFragmentShader.txt";
 
     private int location_transformationMatrix;
+    private int location_highlight;
 
     public GuiShader() {
         super(VERTEX_FILE, FRAGMENT_FILE);
@@ -19,9 +20,14 @@ public class GuiShader extends ShaderProgram{
         super.loadMatrix(location_transformationMatrix, matrix);
     }
 
+    public void loadHighlight(float highlight){
+        super.loadFloat(location_highlight,highlight);
+    }
+
     @Override
     protected void getAllUniformLocations() {
         location_transformationMatrix = super.getUniformLocation("transformationMatrix");
+        location_highlight = super.getUniformLocation("highlight");
     }
 
     @Override
