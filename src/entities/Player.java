@@ -72,33 +72,6 @@ public class Player extends Entity {
         }
     }
 
-    public Terrain calculateTerrain(List<Terrain> terrains){
-        boolean x;
-        boolean z;
-        for(Terrain terrain:terrains) {
-            x = false;
-            z = false;
-            if (terrain.getX() == 0) {
-                if(getPosition().x >= 0){
-                    x = true;
-                }
-            }else if(Math.abs((int)getPosition().x / (int)terrain.getX()) == 0){
-                x = true;
-            }
-            if(terrain.getZ() == 0) {
-                if (getPosition().z >= 0){
-                    z = true;
-                }
-            }else if(Math.abs((int)getPosition().z / (int)terrain.getZ()) == 0){
-                z = true;
-            }
-            if(x && z){
-                return terrain;
-            }
-        }
-        return terrains.get(0);
-    }
-
     public void limitRotation(){
         if(getRotY()>180){
             setRotY(getRotY()-360);

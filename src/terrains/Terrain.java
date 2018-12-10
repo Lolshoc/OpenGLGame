@@ -13,6 +13,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 public class Terrain {
 
@@ -148,6 +149,33 @@ public class Terrain {
         height/=MAX_PIXEL_COLOR/2f;
         height*=MAX_HEIGHT;
         return height;
+    }
+
+    public static Terrain calculateTerrain(List<Terrain> terrains, Vector3f position){
+        boolean x;
+        boolean z;
+        for(Terrain terrain:terrains) {
+            x = false;
+            z = false;
+            if (terrain.getX() == 0) {
+                if(position.x >= 0){
+                    x = true;
+                }
+            }else if(Math.abs((int)position.x / (int)terrain.getX()) == 0){
+                x = true;
+            }
+            if(terrain.getZ() == 0) {
+                if (position.z >= 0){
+                    z = true;
+                }
+            }else if(Math.abs((int)position.z / (int)terrain.getZ()) == 0){
+                z = true;
+            }
+            if(x && z){
+                return terrain;
+            }
+        }
+        return terrains.get(0);
     }
 
 }

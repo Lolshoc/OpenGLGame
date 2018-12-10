@@ -173,7 +173,7 @@ public class MainGameLoop {
         float rate=0.03f;
         float old=lights.get(0).getColour().x;
         while(!Display.isCloseRequested()){
-            player.move(player.calculateTerrain(terrains));
+            player.move(Terrain.calculateTerrain(terrains,player.getPosition()));
             player.limitRotation();
             if(lights.get(0).getColour().x>5){
                 rate=-5/4f*DisplayManager.getDelta();
@@ -182,7 +182,7 @@ public class MainGameLoop {
             }
             Light.updateLight(lights.get(0),player,old,rate);
             old = lights.get(0).getColour().x;
-            camera.move();
+            camera.move(terrains);
             mousePicker.update();
             GL11.glEnable(GL30.GL_CLIP_DISTANCE0);
             //reflection

@@ -4,6 +4,9 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.util.vector.Vector3f;
 import renderEngine.MasterRenderer;
+import terrains.Terrain;
+
+import java.util.List;
 
 public class Camera {
 
@@ -22,13 +25,13 @@ public class Camera {
         this.player=player;
     }
 
-    public void move(){
+    public void move(List<Terrain> terrains){
         calculateZoom();
         calculatePitch();
         calculateAngle();
         float horizontalDistance=calculateHorizontalDistance();
         float verticalDistance=calculateVerticalDistance();
-        calculateCameraPos(horizontalDistance,verticalDistance);
+        calculateCameraPos(horizontalDistance,verticalDistance, terrains);
         this.yaw=180-(player.getRotY()+angleAroundPlayer);if(Keyboard.isKeyDown(Keyboard.KEY_W)){
             position.z-=0.2f;
         }
@@ -71,13 +74,18 @@ public class Camera {
         return roll;
     }
 
-    private void calculateCameraPos(float horizontalDistance,float verticalDistance){
+    private void calculateCameraPos(float horizontalDistance,float verticalDistance, List<Terrain> terrains){
         float theta =player.getRotY()+angleAroundPlayer;
         float offsetX=(float)(horizontalDistance*Math.sin(Math.toRadians(theta)));
         float offsetZ=(float)(horizontalDistance*Math.cos(Math.toRadians(theta)));
         position.x=player.getPosition().x-offsetX;
         position.z=player.getPosition().z-offsetZ;
         position.y=player.getPosition().y+verticalDistance+(defaultHieght*player.getScale());
+        if(position.y<=0) {
+            position.y = 1;
+        }else if(position.y<=Terrain.calculateTerrain(terrains,position).getHeightOfTerrain(position.x,position.z)){
+            position.y = Terrain.calculateTerrain(terrains,position).getHeightOfTerrain(position.x,position.z) + 2f;
+        }
     }
 
     private float calculateHorizontalDistance(){
