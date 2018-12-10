@@ -1,6 +1,7 @@
 package toolbox;
 
 import entities.Camera;
+import entities.JButton;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.util.vector.Matrix4f;
@@ -61,7 +62,9 @@ public class MousePicker {
         return new Vector2f(x,y);
     }
 
-    public static boolean checkIfOnButton(Vector2f topLeft, Vector2f bottomRight){
+    public static boolean checkIfOnButton(JButton button){
+        Vector2f topLeft = button.getTopLeft();
+        Vector2f bottomRight = button.getBottomeRight();
         float x = (float)Mouse.getX()/Display.getWidth();
         float y = (float)Mouse.getY()/Display.getHeight();
         x = x*2 - 1;

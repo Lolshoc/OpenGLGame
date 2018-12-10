@@ -179,6 +179,10 @@ public class GUIText {
 	/**
 	 * @return The string of text.
 	 */
+	public void setText(String text) {
+		textString = text;
+	}
+
 	protected String getTextString() {
 		return textString;
 	}

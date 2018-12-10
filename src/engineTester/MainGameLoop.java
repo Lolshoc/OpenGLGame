@@ -1,9 +1,6 @@
 package engineTester;
 
-import entities.Camera;
-import entities.Entity;
-import entities.Light;
-import entities.Player;
+import entities.*;
 import fontMeshCreator.FontType;
 import fontMeshCreator.GUIText;
 import fontRendering.TextMaster;
@@ -48,6 +45,7 @@ public class MainGameLoop {
     private WaterRenderer waterRenderer;
     private List<Entity> normalMappedEntities = new ArrayList<>(), entities = new ArrayList<>();
     private List<Light> lights = new ArrayList<>();
+    private List<JButton> buttons = new ArrayList<>();
     private List<Terrain> terrains = new ArrayList<>();
     private List<GuiTexture> guis=new ArrayList<>();
     private List<GUIText> texts = new ArrayList<>();
@@ -128,32 +126,41 @@ public class MainGameLoop {
         //main menu code goes here
         boolean close = false;
         boolean play = false;
+        boolean quit = false;
         TextMaster.init(loader);
+        GUIText text = loadText("Play", 3,new Vector2f(0.25f,0.575f),0.5f,true,new Vector3f(1,1,1));
+        GuiTexture texture = new GuiTexture(loader.loadTexture("texture"),new Vector2f(0,-0.25f),new Vector2f(0.25f,0.1f));
+        JButton playButton = new JButton(text,texture,JButton.calculateTopLeft(texture.getPosition(),texture.getScale()),JButton.calculateBottomRight(texture.getPosition(),texture.getScale()),buttons);
+        JButton quitButton = new JButton(loadText("Quit",3,new Vector2f(0.25f,0.7f),0.5f,true,new Vector3f(1,1,1)),new GuiTexture(loader.loadTexture("texture"),new Vector2f(0f,-0.5f),new Vector2f(0.25f,0.1f)),JButton.calculateTopLeft(new Vector2f(0f,-0.5f),new Vector2f(0.25f,0.1f)),JButton.calculateBottomRight(new Vector2f(0f,-0.5f),new Vector2f(0.25f,0.1f)),buttons);
         guis.add(new GuiTexture(loader.loadTexture("nightBack"),new Vector2f(0,0),new Vector2f(1,1)));
-        guis.add(new GuiTexture(loader.loadTexture("texture"),new Vector2f(0f,-0.25f),new Vector2f(0.25f,0.1f)));
+        guis.add(playButton.getTexture());
+        guis.add(quitButton.getTexture());
         loadText("The Night Is Dark",6,new Vector2f(0.1f,0.1f),0.8f,true,new Vector3f(1,1,1));
-        loadText("Play",3,new Vector2f(0.25f,0.575f),0.5f,true,new Vector3f(1,1,1));
         while(!play){
             mousePicker.update();
             if(Mouse.isButtonDown(0)) {
-                play = MousePicker.checkIfOnButton(new Vector2f(-0.25f, -0.15f), new Vector2f(0.25f, -0.35f));
+                play = MousePicker.checkIfOnButton(playButton);
+                quit = MousePicker.checkIfOnButton(quitButton);
             }
-            if(MousePicker.checkIfOnButton(new Vector2f(-0.25f, -0.15f), new Vector2f(0.25f, -0.35f))){
-                guiRenderer.render(guis, 0.1f, 1);
-            }else{
-                guiRenderer.render(guis);
+            for(JButton button:buttons) {
+                if(MousePicker.checkIfOnButton(button)){
+                    guiRenderer.render(guis, 0.1f, buttons.indexOf(button));
+                } else {
+                    guiRenderer.render(guis);
+                }
             }
             TextMaster.render();
             DisplayManager.updateDisplay();
-            if(Display.isCloseRequested()) {
+            if(Display.isCloseRequested() || quit) {
                 close = true;
                 break;
             }
         }
         if(!close) {
+            playButton.deleteButton();
+            quitButton.deleteButton();
             guis.clear();
-            removeText(texts.get(0));
-            removeText(texts.get(1));
+            clearTexts();
             texts.clear();
             initGame();
         }else{
@@ -340,47 +347,63 @@ public class MainGameLoop {
         texts.clear();
         boolean close = false;
         boolean play = false;
+        boolean quit = false;
         TextMaster.init(loader);
         guis.add(new GuiTexture(loader.loadTexture("nightBack"),new Vector2f(0,0),new Vector2f(1,1)));
-        guis.add(new GuiTexture(loader.loadTexture("texture"),new Vector2f(0f,-0.25f),new Vector2f(0.25f,0.1f)));
+        GUIText text = loadText("Play", 3,new Vector2f(0.25f,0.675f),0.5f,true,new Vector3f(1,1,1));
+        GuiTexture texture = new GuiTexture(loader.loadTexture("texture"),new Vector2f(0,-0.25f),new Vector2f(0.1f,0.25f));
+        JButton playButton = new JButton(text,texture,JButton.calculateTopLeft(texture.getPosition(),texture.getScale()),JButton.calculateBottomRight(texture.getPosition(),texture.getScale()),buttons);
+        JButton quitButton = new JButton(loadText("Quit",3,new Vector2f(0.25f,0.7f),0.5f,true,new Vector3f(1,1,1)),new GuiTexture(loader.loadTexture("texture"),new Vector2f(0f,-0.5f),new Vector2f(0.25f,0.1f)),JButton.calculateTopLeft(new Vector2f(0f,-0.5f),new Vector2f(0.25f,0.1f)),JButton.calculateBottomRight(new Vector2f(0f,-0.5f),new Vector2f(0.25f,0.1f)),buttons);
         loadText("The Night Is Dark",6,new Vector2f(0.1f,0.1f),0.8f,true,new Vector3f(1,1,1));
-        loadText("Resume",3,new Vector2f(0.25f,0.575f),0.5f,true,new Vector3f(1,1,1));
+        guis.add(playButton.getTexture());
+        guis.add(quitButton.getTexture());
         while(!play){
             mousePicker.update();
             if(Mouse.isButtonDown(0)) {
-                play = MousePicker.checkIfOnButton(new Vector2f(-0.25f, -0.15f), new Vector2f(0.25f, -0.35f));
+                play = MousePicker.checkIfOnButton(playButton);
+                quit = MousePicker.checkIfOnButton(quitButton);
             }
-            if(MousePicker.checkIfOnButton(new Vector2f(-0.25f, -0.15f), new Vector2f(0.25f, -0.35f))){
-                guiRenderer.render(guis, 0.1f, 1);
-            }else{
-                guiRenderer.render(guis);
+            for(JButton button:buttons) {
+                if (MousePicker.checkIfOnButton(button)) {
+                    guiRenderer.render(guis, 0.1f, buttons.indexOf(button));
+                } else {
+                    guiRenderer.render(guis);
+                }
             }
             TextMaster.render();
             DisplayManager.updateDisplay();
-            if(Display.isCloseRequested()) {
+            if(Display.isCloseRequested() || quit) {
                 close = true;
                 break;
             }
         }
         if(!close) {
+            playButton.deleteButton();
+            quitButton.deleteButton();
             guis.clear();
-            removeText(texts.get(0));
-            removeText(texts.get(1));
+            clearTexts();
             texts.clear();
             gameLogic();
         }
         //pause menu code goes here
     }
 
-    private void loadText(String words,float size, Vector2f position, float length, boolean center, Vector3f color){
+    private GUIText loadText(String words,float size, Vector2f position, float length, boolean center, Vector3f color){
         FontType font = new FontType(loader.loadTexture("harrington"),new File("res/harrington.fnt"));
         GUIText text = new GUIText(words,size,font,position,length,center);
         text.setColour(color.x,color.y,color.z);
         texts.add(text);
+        return text;
     }
 
     private void removeText(GUIText text){
         TextMaster.removeText(text);
+    }
+
+    private void clearTexts(){
+        for(GUIText text:texts){
+            removeText(text);
+        }
     }
 
     private void exit(){
