@@ -368,8 +368,6 @@ public class MainGameLoop {
             removeText(texts.get(1));
             texts.clear();
             gameLogic();
-        }else{
-            exit();
         }
         //pause menu code goes here
     }
