@@ -338,9 +338,9 @@ public class MainGameLoop {
         lamp.getTexture().setUseFakeLighting(true);
         boulder.getTexture().setNormalMapID(loader.loadTexture("boulderNormal"));
         generateTerrain(0,0);
-        generateTerrain(1,0);
-        generateTerrain(0,1);
-        generateTerrain(1,1);
+        generateTerrain(-1,0);
+        generateTerrain(0,-1);
+        generateTerrain(-1,-1);
     }
 
     private void pause(){

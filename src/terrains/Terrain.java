@@ -155,14 +155,14 @@ public class Terrain {
                 if(position.x >= 0 && position.x<SIZE){
                     x = true;
                 }
-            }else if(Math.abs((int)position.x / (int)terrain.getX()) == 0){
+            }else if(Math.abs((int)position.x / (int)terrain.getX()) == 0 || (int)position.x / (int)terrain.getX()== 1){
                 x = true;
             }
             if(terrain.getZ() == 0) {
                 if (position.z >= 0 && position.z<SIZE){
                     z = true;
                 }
-            }else if(Math.abs((int)position.z / (int)terrain.getZ()) == 0){
+            }else if(Math.abs((int)position.z / (int)terrain.getZ()) == 0 || (int)position.z / (int)terrain.getZ()== 1){
                 z = true;
             }
             if(x && z){
