@@ -24,8 +24,9 @@ public class JButton {
         TextMaster.loadText(text);
     }
 
-    public void deleteButton(){
+    public void deleteButton(List<JButton> buttons){
         TextMaster.removeText(text);
+        buttons.remove(this);
     }
 
     public GuiTexture getTexture(){
@@ -37,11 +38,11 @@ public class JButton {
     }
 
     public static Vector2f calculateTopLeft(Vector2f position, Vector2f length){
-        return new Vector2f(position.x-length.x,position.y-length.y);
+        return new Vector2f(position.x-length.x,position.y+length.y);
     }
 
     public static Vector2f calculateBottomRight(Vector2f position, Vector2f length){
-        return new Vector2f(position.x+length.x,position.y+length.y);
+        return new Vector2f(position.x+length.x,position.y-length.y);
     }
 
     public Vector2f getTopLeft() {

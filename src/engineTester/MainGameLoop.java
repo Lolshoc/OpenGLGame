@@ -144,7 +144,8 @@ public class MainGameLoop {
             }
             for(JButton button:buttons) {
                 if(MousePicker.checkIfOnButton(button)){
-                    guiRenderer.render(guis, 0.1f, buttons.indexOf(button));
+                    guiRenderer.render(guis, 0.1f, guis.indexOf(button.getTexture()));
+                    break;
                 } else {
                     guiRenderer.render(guis);
                 }
@@ -157,8 +158,8 @@ public class MainGameLoop {
             }
         }
         if(!close) {
-            playButton.deleteButton();
-            quitButton.deleteButton();
+            playButton.deleteButton(buttons);
+            quitButton.deleteButton(buttons);
             guis.clear();
             clearTexts();
             texts.clear();
@@ -228,7 +229,7 @@ public class MainGameLoop {
             centerX = -800;
         }
         float centerZ = 800;
-        if (worldX < 0){
+        if (worldZ < 0){
             centerZ = -800;
         }
         waters.add(new WaterTile(worldX*1600+centerX,worldZ*1600+centerZ,0));
@@ -335,11 +336,11 @@ public class MainGameLoop {
         flower.getTexture().setUseFakeLighting(true);
         flower.getTexture().setHasTransparency(true);
         lamp.getTexture().setUseFakeLighting(true);
-        boulder.getTexture().setNormalMapID(loader.loadTexture("boulderNormal"));float x;
+        boulder.getTexture().setNormalMapID(loader.loadTexture("boulderNormal"));
         generateTerrain(0,0);
-        generateTerrain(-1,0);
-        generateTerrain(0,-1);
-        generateTerrain(-1,-1);
+        generateTerrain(1,0);
+        generateTerrain(0,1);
+        generateTerrain(1,1);
     }
 
     private void pause(){
@@ -349,14 +350,14 @@ public class MainGameLoop {
         boolean play = false;
         boolean quit = false;
         TextMaster.init(loader);
-        guis.add(new GuiTexture(loader.loadTexture("nightBack"),new Vector2f(0,0),new Vector2f(1,1)));
-        GUIText text = loadText("Play", 3,new Vector2f(0.25f,0.675f),0.5f,true,new Vector3f(1,1,1));
-        GuiTexture texture = new GuiTexture(loader.loadTexture("texture"),new Vector2f(0,-0.25f),new Vector2f(0.1f,0.25f));
+        GUIText text = loadText("Resume", 3,new Vector2f(0.25f,0.575f),0.5f,true,new Vector3f(1,1,1));
+        GuiTexture texture = new GuiTexture(loader.loadTexture("texture"),new Vector2f(0,-0.25f),new Vector2f(0.25f,0.1f));
         JButton playButton = new JButton(text,texture,JButton.calculateTopLeft(texture.getPosition(),texture.getScale()),JButton.calculateBottomRight(texture.getPosition(),texture.getScale()),buttons);
         JButton quitButton = new JButton(loadText("Quit",3,new Vector2f(0.25f,0.7f),0.5f,true,new Vector3f(1,1,1)),new GuiTexture(loader.loadTexture("texture"),new Vector2f(0f,-0.5f),new Vector2f(0.25f,0.1f)),JButton.calculateTopLeft(new Vector2f(0f,-0.5f),new Vector2f(0.25f,0.1f)),JButton.calculateBottomRight(new Vector2f(0f,-0.5f),new Vector2f(0.25f,0.1f)),buttons);
-        loadText("The Night Is Dark",6,new Vector2f(0.1f,0.1f),0.8f,true,new Vector3f(1,1,1));
+        guis.add(new GuiTexture(loader.loadTexture("nightBack"),new Vector2f(0,0),new Vector2f(1,1)));
         guis.add(playButton.getTexture());
         guis.add(quitButton.getTexture());
+        loadText("Paused",6,new Vector2f(0.1f,0.1f),0.8f,true,new Vector3f(1,1,1));
         while(!play){
             mousePicker.update();
             if(Mouse.isButtonDown(0)) {
@@ -364,8 +365,9 @@ public class MainGameLoop {
                 quit = MousePicker.checkIfOnButton(quitButton);
             }
             for(JButton button:buttons) {
-                if (MousePicker.checkIfOnButton(button)) {
-                    guiRenderer.render(guis, 0.1f, buttons.indexOf(button));
+                if(MousePicker.checkIfOnButton(button)){
+                    guiRenderer.render(guis, 0.1f, guis.indexOf(button.getTexture()));
+                    break;
                 } else {
                     guiRenderer.render(guis);
                 }
@@ -378,8 +380,8 @@ public class MainGameLoop {
             }
         }
         if(!close) {
-            playButton.deleteButton();
-            quitButton.deleteButton();
+            playButton.deleteButton(buttons);
+            quitButton.deleteButton(buttons);
             guis.clear();
             clearTexts();
             texts.clear();
@@ -409,6 +411,7 @@ public class MainGameLoop {
     private void exit(){
         TextMaster.cleanUp();
         fbos.cleanUp();
+        buttons.clear();
         waterShader.cleanUp();
         guiRenderer.cleanUp();
         renderer.cleanUp();

@@ -14,15 +14,16 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Random;
 
 public class Terrain {
 
-    private static final float SIZE=1600;
-    private static final float MAX_HEIGHT=40;
-    private static final float MAX_PIXEL_COLOR=256*256*256;
+    public static final float SIZE=1600;
     private float [][] heights;
+    private static final int VERTEX_COUNT = 128;
+    private static final int SEED = new Random().nextInt(1000000000);
 
-
+    private HeightsGenerator generator;
 
     private float x;
     private float z;
@@ -35,6 +36,7 @@ public class Terrain {
         this.blendMap=blendMap;
         this.x=gridX*SIZE;
         this.z=gridZ*SIZE;
+        generator = new HeightsGenerator(gridX,gridZ,VERTEX_COUNT,SEED);
         this.model=generateTerrain(loader, heightMap);
     }
 
@@ -88,7 +90,6 @@ public class Terrain {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        int VERTEX_COUNT=image.getHeight();
         heights=new float[VERTEX_COUNT][VERTEX_COUNT];
         int count = VERTEX_COUNT * VERTEX_COUNT;
         float[] vertices = new float[count * 3];
@@ -99,11 +100,11 @@ public class Terrain {
         for(int i=0;i<VERTEX_COUNT;i++){
             for(int j=0;j<VERTEX_COUNT;j++){
                 vertices[vertexPointer*3] = (float)j/((float)VERTEX_COUNT - 1) * SIZE;
-                float height=getHeight(j,i,image);
+                float height=getHeight(j,i,generator);
                 heights[j][i]=height;
-                vertices[vertexPointer*3+1] = getHeight(j,i,image);
+                vertices[vertexPointer*3+1] = getHeight(j,i,generator);
                 vertices[vertexPointer*3+2] = (float)i/((float)VERTEX_COUNT - 1) * SIZE;
-                Vector3f normal=calculateNormal(j,i,image);
+                Vector3f normal=calculateNormal(j,i,generator);
                 normals[vertexPointer*3] = normal.x;
                 normals[vertexPointer*3+1] = normal.y;
                 normals[vertexPointer*3+2] = normal.z;
@@ -130,25 +131,18 @@ public class Terrain {
         return loader.loadToVAO(vertices, textureCoords, indices, normals);
     }
 
-    private Vector3f calculateNormal(int x, int z, BufferedImage image){
-        float heightL=getHeight(x-1,z,image);
-        float heightR=getHeight(x+1,z,image);
-        float heightU=getHeight(x,z+1,image);
-        float heightD=getHeight(x,z-1,image);
+    private Vector3f calculateNormal(int x, int z, HeightsGenerator heightsGenerator){
+        float heightL=getHeight(x-1,z,heightsGenerator);
+        float heightR=getHeight(x+1,z,heightsGenerator);
+        float heightU=getHeight(x,z+1,heightsGenerator);
+        float heightD=getHeight(x,z-1,heightsGenerator);
         Vector3f normal=new Vector3f(heightL-heightR,2f,heightD-heightU);
         normal.normalise();
         return normal;
     }
 
-    private float getHeight(int x, int z, BufferedImage image){
-        if(x<0||x>=image.getHeight()||z<0||z>=image.getHeight()){
-            return 0;
-        }
-        float height=image.getRGB(x,z);
-        height+=MAX_PIXEL_COLOR/2f;
-        height/=MAX_PIXEL_COLOR/2f;
-        height*=MAX_HEIGHT;
-        return height;
+    private float getHeight(int x, int z, HeightsGenerator heightsGenerator){
+        return heightsGenerator.generateHeight(x,z);
     }
 
     public static Terrain calculateTerrain(List<Terrain> terrains, Vector3f position){
@@ -158,14 +152,14 @@ public class Terrain {
             x = false;
             z = false;
             if (terrain.getX() == 0) {
-                if(position.x >= 0){
+                if(position.x >= 0 && position.x<SIZE){
                     x = true;
                 }
             }else if(Math.abs((int)position.x / (int)terrain.getX()) == 0){
                 x = true;
             }
             if(terrain.getZ() == 0) {
-                if (position.z >= 0){
+                if (position.z >= 0 && position.z<SIZE){
                     z = true;
                 }
             }else if(Math.abs((int)position.z / (int)terrain.getZ()) == 0){
