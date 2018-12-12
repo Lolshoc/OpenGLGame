@@ -1,5 +1,6 @@
 package engineTester;
 
+import Audio.AudioMaster;
 import entities.*;
 import fontMeshCreator.FontType;
 import fontMeshCreator.GUIText;
@@ -84,7 +85,7 @@ public class MainGameLoop {
         TexturedModel lowPolyTree=new TexturedModel(OBJLoader.loadObjModel("lowPolyTree",loader,false),new ModelTexture(loader.loadTexture("lowPolyTree")));
         TexturedModel boulder = new TexturedModel(NormalMappedObjLoader.loadOBJ("boulder",loader),new ModelTexture((loader.loadTexture("boulder"))));
         TexturedModel lamp=new TexturedModel(OBJLoader.loadObjModel("lamp",loader,false),new ModelTexture(loader.loadTexture("lamp")));
-        Player player=new Player(new TexturedModel(OBJLoader.loadObjModel("stanfordBunny",loader,true),new ModelTexture(loader.loadTexture("white"))),new Vector3f(0,0,0),0,0,0,0.75f);
+        Player player=new Player(new TexturedModel(OBJLoader.loadObjModel("stanfordBunny",loader,true),new ModelTexture(loader.loadTexture("white"))),new Vector3f(16000,0,16000),0,0,0,0.75f);
         MasterRenderer renderer=new MasterRenderer(loader);
         Camera camera=new Camera(player);
         MousePicker mousePicker=new MousePicker(camera,renderer.getProjectionMatrix());
@@ -225,13 +226,7 @@ public class MainGameLoop {
     private void generateTerrain(int worldX, int worldZ){
         Terrain terrain = new Terrain(worldX,worldZ,loader,texturePack,blendMap,"heightMap");
         float centerX = 800;
-        if (worldX < 0){
-            centerX = -800;
-        }
         float centerZ = 800;
-        if (worldZ < 0){
-            centerZ = -800;
-        }
         waters.add(new WaterTile(worldX*1600+centerX,worldZ*1600+centerZ,0));
         terrains.add(terrain);
         generateEntities(terrain);
@@ -337,10 +332,10 @@ public class MainGameLoop {
         flower.getTexture().setHasTransparency(true);
         lamp.getTexture().setUseFakeLighting(true);
         boulder.getTexture().setNormalMapID(loader.loadTexture("boulderNormal"));
-        generateTerrain(0,0);
-        generateTerrain(-1,0);
-        generateTerrain(0,-1);
-        generateTerrain(-1,-1);
+        generateTerrain(10,10);
+        generateTerrain(9,10);
+        generateTerrain(10,9);
+        generateTerrain(9,9);
     }
 
     private void pause(){

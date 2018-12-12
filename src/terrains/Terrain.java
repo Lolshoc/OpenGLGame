@@ -37,7 +37,7 @@ public class Terrain {
         this.x=gridX*SIZE;
         this.z=gridZ*SIZE;
         generator = new HeightsGenerator(gridX,gridZ,VERTEX_COUNT,SEED);
-        this.model=generateTerrain(loader, heightMap);
+        this.model=generateTerrain(loader);
     }
 
     public float getX() {
@@ -83,13 +83,7 @@ public class Terrain {
         }
         return answer;
     }
-    private RawModel generateTerrain(Loader loader, String heightMap){
-        BufferedImage image=null;
-        try {
-            image= ImageIO.read(new File("res/"+heightMap+".png"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    private RawModel generateTerrain(Loader loader){
         heights=new float[VERTEX_COUNT][VERTEX_COUNT];
         int count = VERTEX_COUNT * VERTEX_COUNT;
         float[] vertices = new float[count * 3];
@@ -155,14 +149,14 @@ public class Terrain {
                 if(position.x >= 0 && position.x<SIZE){
                     x = true;
                 }
-            }else if(Math.abs((int)position.x / (int)terrain.getX()) == 0 || (int)position.x / (int)terrain.getX()== 1){
+            }else if(Math.abs((int)position.x / (int)terrain.getX()) == 0 && terrain.getX()<0 || (int)position.x / (int)terrain.getX()== 1 && terrain.getX()>0){
                 x = true;
             }
             if(terrain.getZ() == 0) {
                 if (position.z >= 0 && position.z<SIZE){
                     z = true;
                 }
-            }else if(Math.abs((int)position.z / (int)terrain.getZ()) == 0 || (int)position.z / (int)terrain.getZ()== 1){
+            }else if(Math.abs((int)position.z / (int)terrain.getZ()) == 0 && terrain.getZ()<0 || (int)position.z / (int)terrain.getZ()== 1 && terrain.getZ()>0){
                 z = true;
             }
             if(x && z){
