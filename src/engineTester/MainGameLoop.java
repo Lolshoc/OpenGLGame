@@ -1,6 +1,7 @@
 package engineTester;
 
-import Audio.AudioMaster;
+import audio.AudioMaster;
+import audio.Source;
 import entities.*;
 import fontMeshCreator.FontType;
 import fontMeshCreator.GUIText;
@@ -67,6 +68,10 @@ public class MainGameLoop {
     private WaterFrameBuffers fbos;
     private WaterShader waterShader;
     private List<WaterTile> waters=new ArrayList<>();
+    private Source source;
+    private Source source2;
+    private int bard;
+    private int forest;
 
     public static void main(String[] args) throws FileNotFoundException {
 
@@ -85,7 +90,7 @@ public class MainGameLoop {
         TexturedModel lowPolyTree=new TexturedModel(OBJLoader.loadObjModel("lowPolyTree",loader,false),new ModelTexture(loader.loadTexture("lowPolyTree")));
         TexturedModel boulder = new TexturedModel(NormalMappedObjLoader.loadOBJ("boulder",loader),new ModelTexture((loader.loadTexture("boulder"))));
         TexturedModel lamp=new TexturedModel(OBJLoader.loadObjModel("lamp",loader,false),new ModelTexture(loader.loadTexture("lamp")));
-        Player player=new Player(new TexturedModel(OBJLoader.loadObjModel("stanfordBunny",loader,true),new ModelTexture(loader.loadTexture("white"))),new Vector3f(16000,0,16000),0,0,0,0.75f);
+        Player player=new Player(new TexturedModel(OBJLoader.loadObjModel("stanfordBunny",loader,true),new ModelTexture(loader.loadTexture("white"))),new Vector3f(160000,0,160000),0,0,0,0.75f);
         MasterRenderer renderer=new MasterRenderer(loader);
         Camera camera=new Camera(player);
         MousePicker mousePicker=new MousePicker(camera,renderer.getProjectionMatrix());
@@ -120,6 +125,12 @@ public class MainGameLoop {
         this.player = player;
         this.fbos = fbos;
         this.waterShader = waterShader;
+        AudioMaster.init();
+        AudioMaster.setListenerData(0,0,0);
+        this.source = new Source();
+        this.source2 = new Source();
+        this.bard = AudioMaster.loadSound("audio/bard.wav");
+        this.forest = AudioMaster.loadSound("audio/forest.wav");
         menu();
     }
 
@@ -142,6 +153,9 @@ public class MainGameLoop {
             if(Mouse.isButtonDown(0)) {
                 play = MousePicker.checkIfOnButton(playButton);
                 quit = MousePicker.checkIfOnButton(quitButton);
+                if(play || quit){
+                    source.play(bard);
+                }
             }
             for(JButton button:buttons) {
                 if(MousePicker.checkIfOnButton(button)){
@@ -158,6 +172,10 @@ public class MainGameLoop {
                 break;
             }
         }
+        source.setLooping(false);
+        while(!source.isPlaying()){
+            //do nothing
+        }
         if(!close) {
             playButton.deleteButton(buttons);
             quitButton.deleteButton(buttons);
@@ -173,11 +191,14 @@ public class MainGameLoop {
     private void initGame(){
         initEntitiies();
         loadText("Hello world!",1,new Vector2f(0,0),1,false,new Vector3f(1,1,1));
+        source.play(forest);
         gameLogic();
         exit();
     }
 
     private void gameLogic(){
+        source.setLooping(true);
+        source.resume();
         boolean paused = false;
         float rate=0.03f;
         float old=lights.get(0).getColour().x;
@@ -219,6 +240,8 @@ public class MainGameLoop {
             }
         }
         if(paused){
+            source.pause();
+            source2.pause();
             pause();
         }
     }
@@ -238,19 +261,14 @@ public class MainGameLoop {
         float y;
         float scale;
         Random random=new Random();
-        for(int i=0;i<125;i++){
+        for(int i=0;i<200;i++){
             if(i%5==0) {
                 scale = random.nextFloat() * 4 + 1f;
             }else{
                 scale = random.nextFloat() * 2 + 1f;
             }
-            if(i%2==0){
-                x = random.nextFloat() * 1600;
-                z = random.nextFloat() * 1600;
-            }else {
-                x = random.nextFloat() * 800;
-                z = random.nextFloat() * 800;
-            }
+            x = random.nextFloat() * 1600;
+            z = random.nextFloat() * 1600;
             if(terrain.getX()!=0) {
                 x += terrain.getX();
             }
@@ -259,13 +277,9 @@ public class MainGameLoop {
             }
             y = terrain.getHeightOfTerrain(x, z);
             normalMappedEntities.add(new Entity(boulder,new Vector3f(x,y+(random.nextFloat() * 4 - 2) * scale,z),random.nextFloat() * 360,random.nextFloat()*360,random.nextFloat()*360,scale));
-            if(i%2==0){
-                x = random.nextFloat() * 1600;
-                z = random.nextFloat() * 1600;
-            }else {
-                x = random.nextFloat() * 800;
-                z = random.nextFloat() * 800;
-            }if(terrain.getX()!=0) {
+            x = random.nextFloat() * 1600;
+            z = random.nextFloat() * 1600;
+            if(terrain.getX()!=0) {
                 x += terrain.getX();
             }
             if(terrain.getZ()!=0) {
@@ -276,13 +290,9 @@ public class MainGameLoop {
                 entities.add(new Entity(lamp,new Vector3f(x,y,z),0,0,0,1));
                 lights.add(new Light(new Vector3f(x,y+16,z),new Vector3f(2,2,0),new Vector3f(1f,0.01f,0.002f)));
             }
-            if(i%2==0){
-                x = random.nextFloat() * 1600;
-                z = random.nextFloat() * 1600;
-            }else {
-                x = random.nextFloat() * 800;
-                z = random.nextFloat() * 800;
-            }if(terrain.getX()!=0) {
+            x = random.nextFloat() * 1600;
+            z = random.nextFloat() * 1600;
+            if(terrain.getX()!=0) {
                 x += terrain.getX();
             }
             if(terrain.getZ()!=0) {
@@ -290,13 +300,9 @@ public class MainGameLoop {
             }
             y = terrain.getHeightOfTerrain(x, z);
             entities.add(new Entity(tree,new Vector3f(x,y,z),0,0,0,random.nextFloat()*4+1));
-            if(i%2==0){
-                x = random.nextFloat() * 1600;
-                z = random.nextFloat() * 1600;
-            }else {
-                x = random.nextFloat() * 800;
-                z = random.nextFloat() * 800;
-            }if(terrain.getX()!=0) {
+            x = random.nextFloat() * 1600;
+            z = random.nextFloat() * 1600;
+            if(terrain.getX()!=0) {
                 x += terrain.getX();
             }
             if(terrain.getZ()!=0) {
@@ -304,13 +310,9 @@ public class MainGameLoop {
             }
             y = terrain.getHeightOfTerrain(x, z);
             entities.add(new Entity(fern,random.nextInt(4),new Vector3f(x,y,z),0,random.nextFloat()*360,0,random.nextFloat()*0.5f+2));
-            if(i%2==0){
-                x = random.nextFloat() * 1600;
-                z = random.nextFloat() * 1600;
-            }else {
-                x = random.nextFloat() * 800;
-                z = random.nextFloat() * 800;
-            }if(terrain.getX()!=0) {
+            x = random.nextFloat() * 1600;
+            z = random.nextFloat() * 1600;
+            if(terrain.getX()!=0) {
                 x += terrain.getX();
             }
             if(terrain.getZ()!=0) {
@@ -332,13 +334,14 @@ public class MainGameLoop {
         flower.getTexture().setHasTransparency(true);
         lamp.getTexture().setUseFakeLighting(true);
         boulder.getTexture().setNormalMapID(loader.loadTexture("boulderNormal"));
-        generateTerrain(10,10);
-        generateTerrain(9,10);
-        generateTerrain(10,9);
-        generateTerrain(9,9);
+        generateTerrain(100,100);
+        generateTerrain(99,100);
+        generateTerrain(100,99);
+        generateTerrain(99,99);
     }
 
     private void pause(){
+        source2.setLooping(false);
         //temp
         texts.clear();
         boolean close = false;
@@ -358,6 +361,9 @@ public class MainGameLoop {
             if(Mouse.isButtonDown(0)) {
                 play = MousePicker.checkIfOnButton(playButton);
                 quit = MousePicker.checkIfOnButton(quitButton);
+                if(play || quit){
+                    source2.play(bard);
+                }
             }
             for(JButton button:buttons) {
                 if(MousePicker.checkIfOnButton(button)){
@@ -373,6 +379,10 @@ public class MainGameLoop {
                 close = true;
                 break;
             }
+        }
+        source.setLooping(false);
+        while(!source2.isPlaying()){
+            //do nothing
         }
         if(!close) {
             playButton.deleteButton(buttons);
@@ -405,6 +415,9 @@ public class MainGameLoop {
 
     private void exit(){
         TextMaster.cleanUp();
+        source.cleanUp();
+        source2.cleanUp();
+        AudioMaster.cleanUp();
         fbos.cleanUp();
         buttons.clear();
         waterShader.cleanUp();
