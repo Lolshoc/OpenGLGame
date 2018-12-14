@@ -68,6 +68,7 @@ public class MainGameLoop {
     private WaterFrameBuffers fbos;
     private WaterShader waterShader;
     private List<WaterTile> waters=new ArrayList<>();
+    private Source starter;
     private Source source;
     private Source source2;
     private Source water;
@@ -75,6 +76,7 @@ public class MainGameLoop {
     private int forest;
     private int splash;
     private int flow;
+    private boolean sounds = true;
 
     public static void main(String[] args) throws FileNotFoundException {
 
@@ -133,6 +135,7 @@ public class MainGameLoop {
         this.source = new Source();
         this.source2 = new Source();
         this.water = new Source();
+        this.starter = new Source();
         this.bard = AudioMaster.loadSound("audio/bard.wav");
         this.forest = AudioMaster.loadSound("audio/forest.wav");
         this.splash = AudioMaster.loadSound("audio/splashShort.wav");
@@ -144,24 +147,36 @@ public class MainGameLoop {
         //main menu code goes here
         boolean close = false;
         boolean play = false;
+        boolean setting = false;
         boolean quit = false;
+        boolean down = true;
         TextMaster.init(loader);
         GUIText text = loadText("Play", 3,new Vector2f(0.25f,0.575f),0.5f,true,new Vector3f(1,1,1));
         GuiTexture texture = new GuiTexture(loader.loadTexture("texture"),new Vector2f(0,-0.25f),new Vector2f(0.25f,0.1f));
         JButton playButton = new JButton(text,texture,JButton.calculateTopLeft(texture.getPosition(),texture.getScale()),JButton.calculateBottomRight(texture.getPosition(),texture.getScale()),buttons);
-        JButton quitButton = new JButton(loadText("Quit",3,new Vector2f(0.25f,0.7f),0.5f,true,new Vector3f(1,1,1)),new GuiTexture(loader.loadTexture("texture"),new Vector2f(0f,-0.5f),new Vector2f(0.25f,0.1f)),JButton.calculateTopLeft(new Vector2f(0f,-0.5f),new Vector2f(0.25f,0.1f)),JButton.calculateBottomRight(new Vector2f(0f,-0.5f),new Vector2f(0.25f,0.1f)),buttons);
+        JButton settings = new JButton(loadText("Settings",3,new Vector2f(0.25f,0.7f),0.5f,true,new Vector3f(1,1,1)),new GuiTexture(loader.loadTexture("texture"), new Vector2f(0f,-0.5f),new Vector2f(0.25f,0.1f)),JButton.calculateTopLeft(new Vector2f(0f,-0.5f),new Vector2f(0.25f,0.1f)),JButton.calculateBottomRight(new Vector2f(0f,-0.5f),new Vector2f(0.25f,0.1f)),buttons);
+        JButton quitButton = new JButton(loadText("Quit",3,new Vector2f(0.25f,0.825f),0.5f,true,new Vector3f(1,1,1)),new GuiTexture(loader.loadTexture("texture"),new Vector2f(0f,-0.75f),new Vector2f(0.25f,0.1f)),JButton.calculateTopLeft(new Vector2f(0f,-0.75f),new Vector2f(0.25f,0.1f)),JButton.calculateBottomRight(new Vector2f(0f,-0.75f),new Vector2f(0.25f,0.1f)),buttons);
         guis.add(new GuiTexture(loader.loadTexture("nightBack"),new Vector2f(0,0),new Vector2f(1,1)));
         guis.add(playButton.getTexture());
+        guis.add(settings.getTexture());
         guis.add(quitButton.getTexture());
         loadText("The Night Is Dark",6,new Vector2f(0.1f,0.1f),0.8f,true,new Vector3f(1,1,1));
         while(!play){
             mousePicker.update();
             if(Mouse.isButtonDown(0)) {
-                play = MousePicker.checkIfOnButton(playButton);
-                quit = MousePicker.checkIfOnButton(quitButton);
-                if(play || quit){
-                    source.play(bard);
+                if(!down) {
+                    play = MousePicker.checkIfOnButton(playButton);
+                    setting = MousePicker.checkIfOnButton(settings);
+                    quit = MousePicker.checkIfOnButton(quitButton);
+                    if (sounds) {
+                        if (play || quit) {
+                            starter.play(bard);
+                        }
+                    }
                 }
+                down = true;
+            }else{
+                down = false;
             }
             for(JButton button:buttons) {
                 if(MousePicker.checkIfOnButton(button)){
@@ -176,19 +191,23 @@ public class MainGameLoop {
             if(Display.isCloseRequested() || quit) {
                 close = true;
                 break;
+            }else if(setting){
+                break;
             }
         }
         source.setLooping(false);
-        while(!source.isPlaying()){
-            //do nothing
-        }
         if(!close) {
             playButton.deleteButton(buttons);
+            settings.deleteButton(buttons);
             quitButton.deleteButton(buttons);
             guis.clear();
             clearTexts();
             texts.clear();
-            initGame();
+            if(setting){
+                settings(true );
+            }else {
+                initGame();
+            }
         }else{
             exit();
         }
@@ -203,8 +222,12 @@ public class MainGameLoop {
     }
 
     private void gameLogic(){
-        source.setLooping(true);
-        source.resume();
+        if(sounds) {
+            source.setLooping(true);
+            source.resume();
+        }else{
+            source.pause();
+        }
         boolean paused = false;
         boolean hitWater = true;
         float rate=0.03f;
@@ -212,16 +235,18 @@ public class MainGameLoop {
         while(!Display.isCloseRequested()){
             player.move(Terrain.calculateTerrain(terrains,player.getPosition()));
             player.limitRotation();
-            if (player.getPosition().y<=0){
-                if(hitWater){
-                    water.play(splash);
-                    hitWater = false;
-                }else if(!water.isPlaying()){
-                    water.play(flow);
+            if(sounds) {
+                if (player.getPosition().y <= 0) {
+                    if (hitWater) {
+                        water.play(splash);
+                        hitWater = false;
+                    } else if (!water.isPlaying()) {
+                        water.play(flow);
+                    }
+                } else {
+                    water.pause();
+                    hitWater = true;
                 }
-            } else {
-                water.pause();
-                hitWater = true;
             }
             if(lights.get(0).getColour().x>5){
                 rate=-5/4f*DisplayManager.getDelta();
@@ -363,26 +388,38 @@ public class MainGameLoop {
         source2.setLooping(false);
         //temp
         texts.clear();
+        boolean down = true;
         boolean close = false;
         boolean play = false;
+        boolean setting = false;
         boolean quit = false;
         TextMaster.init(loader);
         GUIText text = loadText("Resume", 3,new Vector2f(0.25f,0.575f),0.5f,true,new Vector3f(1,1,1));
         GuiTexture texture = new GuiTexture(loader.loadTexture("texture"),new Vector2f(0,-0.25f),new Vector2f(0.25f,0.1f));
         JButton playButton = new JButton(text,texture,JButton.calculateTopLeft(texture.getPosition(),texture.getScale()),JButton.calculateBottomRight(texture.getPosition(),texture.getScale()),buttons);
-        JButton quitButton = new JButton(loadText("Quit",3,new Vector2f(0.25f,0.7f),0.5f,true,new Vector3f(1,1,1)),new GuiTexture(loader.loadTexture("texture"),new Vector2f(0f,-0.5f),new Vector2f(0.25f,0.1f)),JButton.calculateTopLeft(new Vector2f(0f,-0.5f),new Vector2f(0.25f,0.1f)),JButton.calculateBottomRight(new Vector2f(0f,-0.5f),new Vector2f(0.25f,0.1f)),buttons);
+        JButton settings = new JButton(loadText("Settings",3,new Vector2f(0.25f,0.7f),0.5f,true,new Vector3f(1,1,1)),new GuiTexture(loader.loadTexture("texture"), new Vector2f(0f,-0.5f),new Vector2f(0.25f,0.1f)),JButton.calculateTopLeft(new Vector2f(0f,-0.5f),new Vector2f(0.25f,0.1f)),JButton.calculateBottomRight(new Vector2f(0f,-0.5f),new Vector2f(0.25f,0.1f)),buttons);
+        JButton quitButton = new JButton(loadText("Quit",3,new Vector2f(0.25f,0.825f),0.5f,true,new Vector3f(1,1,1)),new GuiTexture(loader.loadTexture("texture"),new Vector2f(0f,-0.75f),new Vector2f(0.25f,0.1f)),JButton.calculateTopLeft(new Vector2f(0f,-0.75f),new Vector2f(0.25f,0.1f)),JButton.calculateBottomRight(new Vector2f(0f,-0.75f),new Vector2f(0.25f,0.1f)),buttons);
         guis.add(new GuiTexture(loader.loadTexture("nightBack"),new Vector2f(0,0),new Vector2f(1,1)));
         guis.add(playButton.getTexture());
+        guis.add(settings.getTexture());
         guis.add(quitButton.getTexture());
         loadText("Paused",6,new Vector2f(0.1f,0.1f),0.8f,true,new Vector3f(1,1,1));
         while(!play){
             mousePicker.update();
             if(Mouse.isButtonDown(0)) {
-                play = MousePicker.checkIfOnButton(playButton);
-                quit = MousePicker.checkIfOnButton(quitButton);
-                if(play || quit){
-                    source2.play(bard);
+                if(!down) {
+                    play = MousePicker.checkIfOnButton(playButton);
+                    setting = MousePicker.checkIfOnButton(settings);
+                    quit = MousePicker.checkIfOnButton(quitButton);
+                    if (play || quit) {
+                        if (sounds) {
+                            starter.play(bard);
+                        }
+                    }
                 }
+                down = true;
+            }else {
+                down = false;
             }
             for(JButton button:buttons) {
                 if(MousePicker.checkIfOnButton(button)){
@@ -397,21 +434,90 @@ public class MainGameLoop {
             if(Display.isCloseRequested() || quit) {
                 close = true;
                 break;
+            }else if(setting){
+                break;
             }
         }
-        source.setLooping(false);
-        while(!source2.isPlaying()){
-            //do nothing
-        }
+        starter.setLooping(false);
         if(!close) {
             playButton.deleteButton(buttons);
+            settings.deleteButton(buttons);
             quitButton.deleteButton(buttons);
             guis.clear();
             clearTexts();
             texts.clear();
-            gameLogic();
+            if(setting){
+                settings(false);
+            }else {
+                gameLogic();
+            }
         }
         //pause menu code goes here
+    }
+
+    private void settings(boolean menu){
+        boolean down = true;
+        boolean close = false;
+        boolean backToMenu = false;
+        GUIText text = loadText("Sound", 3,new Vector2f(0.25f,0.575f),0.5f,true,new Vector3f(1,1,1));
+        GuiTexture texture = new GuiTexture(loader.loadTexture("texture"),new Vector2f(0,-0.25f),new Vector2f(0.25f,0.1f));
+        JButton sound = new JButton(text,texture,JButton.calculateTopLeft(texture.getPosition(),texture.getScale()),JButton.calculateBottomRight(texture.getPosition(),texture.getScale()),buttons);
+        JButton back = new JButton(loadText("Back",3,new Vector2f(0.25f,0.825f),0.5f,true,new Vector3f(1,1,1)),new GuiTexture(loader.loadTexture("texture"), new Vector2f(0f,-0.75f),new Vector2f(0.25f,0.1f)),JButton.calculateTopLeft(new Vector2f(0f,-0.75f),new Vector2f(0.25f,0.1f)),JButton.calculateBottomRight(new Vector2f(0f,-0.75f),new Vector2f(0.25f,0.1f)),buttons);
+        guis.add(new GuiTexture(loader.loadTexture("nightBack"),new Vector2f(0,0),new Vector2f(1,1)));
+        guis.add(sound.getTexture());
+        guis.add(back.getTexture());
+        loadText("The Night Is Dark",6,new Vector2f(0.1f,0.1f),0.8f,true,new Vector3f(1,1,1));
+        GuiTexture soundGUI = new GuiTexture(loader.loadTexture("green"),new Vector2f(0.375f,-0.25f),new Vector2f(0.1f,0.1f));
+        List<GuiTexture> soundList = new ArrayList<>();
+        soundList.add(soundGUI);
+        while(!backToMenu){
+            mousePicker.update();
+            if(Mouse.isButtonDown(0)) {
+                if(!down) {
+                    backToMenu = MousePicker.checkIfOnButton(back);
+                    if (MousePicker.checkIfOnButton(sound)) {
+                        sounds = !sounds;
+                    }
+                }
+                down = true;
+            }else{
+                down = false;
+            }
+            for(JButton button:buttons) {
+                if(MousePicker.checkIfOnButton(button)){
+                    guiRenderer.render(guis, 0.1f, guis.indexOf(button.getTexture()));
+                    break;
+                } else {
+                    guiRenderer.render(guis);
+                }
+            }
+            if(sounds){
+                soundGUI.setTexture(loader.loadTexture("green"));
+            }else{
+                soundGUI.setTexture(loader.loadTexture("red"));
+            }
+            guiRenderer.render(soundList);
+            TextMaster.render();
+            DisplayManager.updateDisplay();
+            if(Display.isCloseRequested()) {
+                close = true;
+                break;
+            }
+        }
+        sound.deleteButton(buttons);
+        back.deleteButton(buttons);
+        clearTexts();
+        texts.clear();
+        guis.clear();
+        if(!close){
+            if(menu){
+                menu();
+            }else{
+                pause();
+            }
+        }else{
+            exit();
+        }
     }
 
     private GUIText loadText(String words,float size, Vector2f position, float length, boolean center, Vector3f color){
@@ -437,6 +543,7 @@ public class MainGameLoop {
         source.cleanUp();
         source2.cleanUp();
         water.cleanUp();
+        starter.cleanUp();
         AudioMaster.cleanUp();
         fbos.cleanUp();
         buttons.clear();

@@ -26,4 +26,7 @@ public class GuiTexture {
         return scale;
     }
 
+    public void setTexture(int texture) {
+        this.texture = texture;
+    }
 }
