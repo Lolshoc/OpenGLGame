@@ -70,8 +70,11 @@ public class MainGameLoop {
     private List<WaterTile> waters=new ArrayList<>();
     private Source source;
     private Source source2;
+    private Source water;
     private int bard;
     private int forest;
+    private int splash;
+    private int flow;
 
     public static void main(String[] args) throws FileNotFoundException {
 
@@ -129,8 +132,11 @@ public class MainGameLoop {
         AudioMaster.setListenerData(0,0,0);
         this.source = new Source();
         this.source2 = new Source();
+        this.water = new Source();
         this.bard = AudioMaster.loadSound("audio/bard.wav");
         this.forest = AudioMaster.loadSound("audio/forest.wav");
+        this.splash = AudioMaster.loadSound("audio/splashShort.wav");
+        this.flow = AudioMaster.loadSound("audio/flow.wav");
         menu();
     }
 
@@ -200,11 +206,23 @@ public class MainGameLoop {
         source.setLooping(true);
         source.resume();
         boolean paused = false;
+        boolean hitWater = true;
         float rate=0.03f;
         float old=lights.get(0).getColour().x;
         while(!Display.isCloseRequested()){
             player.move(Terrain.calculateTerrain(terrains,player.getPosition()));
             player.limitRotation();
+            if (player.getPosition().y<=0){
+                if(hitWater){
+                    water.play(splash);
+                    hitWater = false;
+                }else if(!water.isPlaying()){
+                    water.play(flow);
+                }
+            } else {
+                water.pause();
+                hitWater = true;
+            }
             if(lights.get(0).getColour().x>5){
                 rate=-5/4f*DisplayManager.getDelta();
             }else if(lights.get(0).getColour().x<0){
@@ -242,6 +260,7 @@ public class MainGameLoop {
         if(paused){
             source.pause();
             source2.pause();
+            water.pause();
             pause();
         }
     }
@@ -417,6 +436,7 @@ public class MainGameLoop {
         TextMaster.cleanUp();
         source.cleanUp();
         source2.cleanUp();
+        water.cleanUp();
         AudioMaster.cleanUp();
         fbos.cleanUp();
         buttons.clear();
