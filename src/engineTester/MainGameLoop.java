@@ -76,6 +76,7 @@ public class MainGameLoop {
     private int forest;
     private int splash;
     private int flow;
+    private int waves;
     private boolean sounds = true;
 
     public static void main(String[] args) throws FileNotFoundException {
@@ -140,6 +141,7 @@ public class MainGameLoop {
         this.forest = AudioMaster.loadSound("audio/forest.wav");
         this.splash = AudioMaster.loadSound("audio/splashShort.wav");
         this.flow = AudioMaster.loadSound("audio/flow.wav");
+        this.waves = AudioMaster.loadSound("audio/waves.wav");
         menu();
     }
 
@@ -244,7 +246,9 @@ public class MainGameLoop {
                         water.play(flow);
                     }
                 } else {
-                    water.pause();
+                    if(!hitWater){
+                        water.play(waves);
+                    }
                     hitWater = true;
                 }
             }
