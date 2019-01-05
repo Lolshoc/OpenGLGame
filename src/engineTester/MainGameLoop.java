@@ -53,6 +53,8 @@ public class MainGameLoop {
     private List<Light> lights = new ArrayList<>();
     private List<JButton> buttons = new ArrayList<>();
     private List<Terrain> terrains = new ArrayList<>();
+    private List<Terrain> renderedTerrains = new ArrayList<>();
+    private List<Entity> renderedEntities = new ArrayList<>(), renderedNormalMappedEntities = new ArrayList<>();
     private List<GuiTexture> guis=new ArrayList<>();
     private List<GUIText> texts = new ArrayList<>();
     private TerrainTexture backgroundTexture;
@@ -248,9 +250,13 @@ public class MainGameLoop {
         boolean hitWater = true;
         float rate=0.03f;
         float old=lights.get(0).getColour().x;
+        Terrain current;
         while(!Display.isCloseRequested()){
-            player.move(Terrain.calculateTerrain(terrains,player.getPosition()));
+            current = Terrain.calculateTerrain(terrains,player.getPosition());
+            player.move(current);
             player.limitRotation();
+            updateGrid(terrains,current);
+            renderedTerrains = Terrain.calculateGrid(terrains,current);
             if(sounds) {
                 if (player.getPosition().y <= 0) {
                     if (hitWater) {
@@ -277,7 +283,7 @@ public class MainGameLoop {
             }
             Light.updateLight(lights.get(0),player,old,rate);
             old = lights.get(0).getColour().x;
-            camera.move(terrains);
+            camera.move(renderedTerrains);
             mousePicker.update();
             GL11.glEnable(GL30.GL_CLIP_DISTANCE0);
             //reflection
@@ -285,16 +291,16 @@ public class MainGameLoop {
             float distance=2*camera.getPosition().y-waters.get(0).getHeight();
             camera.getPosition().y-=distance;
             camera.invertPitch();
-            renderer.renderScene(normalMappedEntities,entities,terrains,lights,camera,player,new Vector4f(0,1,0,-waters.get(0).getHeight()+1f));
+            renderer.renderScene(normalMappedEntities,entities,renderedTerrains,lights,camera,player,new Vector4f(0,1,0,-waters.get(0).getHeight()+1f));
             camera.getPosition().y+=distance;
             camera.invertPitch();
             //refraction
             fbos.bindRefractionFrameBuffer();
-            renderer.renderScene(normalMappedEntities,entities,terrains,lights,camera,player,new Vector4f(0,-1,0,waters.get(0).getHeight()+1f));
+            renderer.renderScene(normalMappedEntities,entities,renderedTerrains,lights,camera,player,new Vector4f(0,-1,0,waters.get(0).getHeight()+1f));
             //regular
             GL11.glDisable(GL30.GL_CLIP_DISTANCE0);
             fbos.unbindCurrentFrameBuffer();
-            renderer.renderScene(normalMappedEntities,entities,terrains,lights,camera,player,new Vector4f(0,-1,0,100000));
+            renderer.renderScene(normalMappedEntities,entities,renderedTerrains,lights,camera,player,new Vector4f(0,-1,0,100000));
             waterRenderer.render(waters,camera, lights.get(0));
             if(particles) {
                 ParticleMaster.render(camera);
@@ -322,6 +328,16 @@ public class MainGameLoop {
         waters.add(new WaterTile(worldX*1600+centerX,worldZ*1600+centerZ,0));
         terrains.add(terrain);
         generateEntities(terrain);
+    }
+
+    private void updateGrid(List<Terrain> terrains, Terrain current){
+        for(int i=-1;i<2;i++){
+            for(int j=-1;j<2;j++){
+                if(!Terrain.checkForTerrain(current.getX()/Terrain.SIZE+i,current.getZ()/Terrain.SIZE+j,terrains)){
+                    generateTerrain((int)(current.getX()/Terrain.SIZE+i),(int)(current.getZ()/Terrain.SIZE+j));
+                }
+            }
+        }
     }
 
     private void generateEntities(Terrain terrain){
@@ -407,6 +423,12 @@ public class MainGameLoop {
         generateTerrain(99,100);
         generateTerrain(100,99);
         generateTerrain(99,99);
+    }
+
+    private void calculateEntitiesToRender(List<Entity> entities, List<Entity> normalMappedEntities, List<Terrain> terrains){
+        for(Entity entity:entities){
+            //add code here
+        }
     }
 
     private void pause(){

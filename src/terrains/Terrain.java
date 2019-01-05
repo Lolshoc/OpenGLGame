@@ -13,6 +13,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -164,6 +165,54 @@ public class Terrain {
             }
         }
         return terrains.get(0);
+    }
+
+    public static List<Terrain> calculateGrid(List<Terrain> terrains, Terrain current){
+        List<Terrain> grid = new ArrayList<>();
+        grid.add(current);
+        float currentX=current.getX()/SIZE;
+        float currentZ=current.getZ()/SIZE;
+        for(Terrain terrain:terrains){
+            if (terrain == current) {
+                continue;
+            }else{
+                float x=terrain.getX()/SIZE;
+                float z=terrain.getZ()/SIZE;
+                boolean xMatch;
+                boolean zMatch;
+                switch((int)(x-currentX)){
+                    case -1:
+                    case 0:
+                    case 1:
+                        xMatch=true;
+                        break;
+                    default:
+                        xMatch=false;
+                }
+                switch((int)(z-currentZ)){
+                    case -1:
+                    case 0:
+                    case 1:
+                        zMatch=true;
+                        break;
+                    default:
+                        zMatch=false;
+                }
+                if (xMatch && zMatch) {
+                    grid.add(terrain);
+                }
+            }
+        }
+        return grid;
+    }
+
+    public static boolean checkForTerrain(float gridX, float gridZ, List<Terrain> terrains){
+        for(Terrain terrain:terrains){
+            if(terrain.getX()/SIZE==gridX&&terrain.getZ()/SIZE==gridZ){
+                return true;
+            }
+        }
+        return false;
     }
 
 }
