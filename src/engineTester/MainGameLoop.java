@@ -57,12 +57,9 @@ public class MainGameLoop {
     private List<Entity> renderedEntities = new ArrayList<>(), renderedNormalMappedEntities = new ArrayList<>();
     private List<GuiTexture> guis=new ArrayList<>();
     private List<GUIText> texts = new ArrayList<>();
-    private TerrainTexture backgroundTexture;
-    private TerrainTexture rTexture;
-    private TerrainTexture gTexture;
-    private TerrainTexture bTexture;
     private TerrainTexturePack texturePack;
     private TerrainTexture blendMap;
+    private Terrain current;
     private TexturedModel tree;
     private TexturedModel grass;
     private TexturedModel fern;
@@ -113,21 +110,17 @@ public class MainGameLoop {
         WaterFrameBuffers fbos=new WaterFrameBuffers();
         WaterShader waterShader=new WaterShader();
         WaterRenderer waterRenderer=new WaterRenderer(loader,waterShader,renderer.getProjectionMatrix(),fbos);
-        new MainGameLoop(loader,renderer,camera,mousePicker,guiRenderer,waterRenderer,backgroundTexture,rTexture,gTexture,bTexture,texturePack,blendMap,tree,grass,fern,flower,lowPolyTree,boulder,lamp,player,fbos,waterShader);
+        new MainGameLoop(loader,renderer,camera,mousePicker,guiRenderer,waterRenderer,texturePack,blendMap,tree,grass,fern,flower,lowPolyTree,boulder,lamp,player,fbos,waterShader);
 
     }
 
-    public MainGameLoop(Loader loader, MasterRenderer renderer, Camera camera, MousePicker mousePicker, GuiRenderer guiRenderer, WaterRenderer waterRenderer, TerrainTexture backgroundTexture, TerrainTexture rTexture, TerrainTexture gTexture, TerrainTexture bTexture, TerrainTexturePack texturePack, TerrainTexture blendMap, TexturedModel tree, TexturedModel grass, TexturedModel fern, TexturedModel flower, TexturedModel lowPolyTree, TexturedModel boulder, TexturedModel lamp, Player player, WaterFrameBuffers fbos, WaterShader waterShader) {
+    private MainGameLoop(Loader loader, MasterRenderer renderer, Camera camera, MousePicker mousePicker, GuiRenderer guiRenderer, WaterRenderer waterRenderer, TerrainTexturePack texturePack, TerrainTexture blendMap, TexturedModel tree, TexturedModel grass, TexturedModel fern, TexturedModel flower, TexturedModel lowPolyTree, TexturedModel boulder, TexturedModel lamp, Player player, WaterFrameBuffers fbos, WaterShader waterShader) {
         this.loader = loader;
         this.renderer = renderer;
         this.camera = camera;
         this.mousePicker = mousePicker;
         this.guiRenderer = guiRenderer;
         this.waterRenderer = waterRenderer;
-        this.backgroundTexture = backgroundTexture;
-        this.rTexture = rTexture;
-        this.gTexture = gTexture;
-        this.bTexture = bTexture;
         this.texturePack = texturePack;
         this.blendMap = blendMap;
         this.tree = tree;
@@ -250,13 +243,19 @@ public class MainGameLoop {
         boolean hitWater = true;
         float rate=0.03f;
         float old=lights.get(0).getColour().x;
-        Terrain current;
+        current = Terrain.calculateTerrain(terrains, player.getPosition());
+        updateGrid();
+        renderedTerrains = Terrain.calculateGrid(terrains, current);
+        calculateEntitiesToRender();
         while(!Display.isCloseRequested()){
-            current = Terrain.calculateTerrain(terrains,player.getPosition());
+            if(current!=Terrain.calculateTerrain(terrains,player.getPosition())) {
+                current = Terrain.calculateTerrain(terrains, player.getPosition());
+                updateGrid();
+                renderedTerrains = Terrain.calculateGrid(terrains, current);
+                calculateEntitiesToRender();
+            }
             player.move(current);
             player.limitRotation();
-            updateGrid(terrains,current);
-            renderedTerrains = Terrain.calculateGrid(terrains,current);
             if(sounds) {
                 if (player.getPosition().y <= 0) {
                     if (hitWater) {
@@ -291,16 +290,16 @@ public class MainGameLoop {
             float distance=2*camera.getPosition().y-waters.get(0).getHeight();
             camera.getPosition().y-=distance;
             camera.invertPitch();
-            renderer.renderScene(normalMappedEntities,entities,renderedTerrains,lights,camera,player,new Vector4f(0,1,0,-waters.get(0).getHeight()+1f));
+            renderer.renderScene(renderedNormalMappedEntities,renderedEntities,renderedTerrains,lights,camera,player,new Vector4f(0,1,0,-waters.get(0).getHeight()+1f));
             camera.getPosition().y+=distance;
             camera.invertPitch();
             //refraction
             fbos.bindRefractionFrameBuffer();
-            renderer.renderScene(normalMappedEntities,entities,renderedTerrains,lights,camera,player,new Vector4f(0,-1,0,waters.get(0).getHeight()+1f));
+            renderer.renderScene(renderedNormalMappedEntities,renderedEntities,renderedTerrains,lights,camera,player,new Vector4f(0,-1,0,waters.get(0).getHeight()+1f));
             //regular
             GL11.glDisable(GL30.GL_CLIP_DISTANCE0);
             fbos.unbindCurrentFrameBuffer();
-            renderer.renderScene(normalMappedEntities,entities,renderedTerrains,lights,camera,player,new Vector4f(0,-1,0,100000));
+            renderer.renderScene(renderedNormalMappedEntities,renderedEntities,renderedTerrains,lights,camera,player,new Vector4f(0,-1,0,100000));
             waterRenderer.render(waters,camera, lights.get(0));
             if(particles) {
                 ParticleMaster.render(camera);
@@ -330,7 +329,7 @@ public class MainGameLoop {
         generateEntities(terrain);
     }
 
-    private void updateGrid(List<Terrain> terrains, Terrain current){
+    private void updateGrid(){
         for(int i=-1;i<2;i++){
             for(int j=-1;j<2;j++){
                 if(!Terrain.checkForTerrain(current.getX()/Terrain.SIZE+i,current.getZ()/Terrain.SIZE+j,terrains)){
@@ -425,9 +424,20 @@ public class MainGameLoop {
         generateTerrain(99,99);
     }
 
-    private void calculateEntitiesToRender(List<Entity> entities, List<Entity> normalMappedEntities, List<Terrain> terrains){
+    private void calculateEntitiesToRender(){
+        renderedEntities.clear();
+        normalMappedEntities.clear();
+        Vector2f topRight = new Vector2f(current.getX()+2*Terrain.SIZE,current.getZ()+2*Terrain.SIZE);
+        Vector2f bottomLeft = new Vector2f(current.getX()-Terrain.SIZE,current.getZ()-Terrain.SIZE);
         for(Entity entity:entities){
-            //add code here
+            if (entity.getPosition().x <= topRight.x && entity.getPosition().x >= bottomLeft.x && entity.getPosition().z <= topRight.y && entity.getPosition().z >= bottomLeft.y) {
+                renderedEntities.add(entity);
+            }
+        }
+        for(Entity entity:normalMappedEntities){
+            if (entity.getPosition().x <= topRight.x && entity.getPosition().x >= bottomLeft.x && entity.getPosition().z <= topRight.y && entity.getPosition().z >= bottomLeft.y) {
+                renderedNormalMappedEntities.add(entity);
+            }
         }
     }
 
