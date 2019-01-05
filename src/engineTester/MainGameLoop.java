@@ -18,6 +18,10 @@ import org.lwjgl.opengl.GL30;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
+import particles.Particle;
+import particles.ParticleMaster;
+import particles.ParticleSystem;
+import particles.ParticleTexture;
 import renderEngine.*;
 import models.RawModel;
 import shaders.StaticShader;
@@ -78,6 +82,9 @@ public class MainGameLoop {
     private int flow;
     private int waves;
     private boolean sounds = true;
+    private boolean particles = true;
+    private ParticleSystem snow;
+    private ParticleTexture particleTexture;
 
     public static void main(String[] args) throws FileNotFoundException {
 
@@ -142,6 +149,13 @@ public class MainGameLoop {
         this.splash = AudioMaster.loadSound("audio/splashShort.wav");
         this.flow = AudioMaster.loadSound("audio/flow.wav");
         this.waves = AudioMaster.loadSound("audio/waves.wav");
+        ParticleMaster.init(loader,renderer.getProjectionMatrix());
+        this.particleTexture = new ParticleTexture(loader.loadTexture("particleAtlas"),4,false);
+        this.snow = new ParticleSystem(particleTexture,40,10,0.1f,1,1.6f);
+        snow.setLifeError(0.1f);
+        snow.setScaleError(0.5f);
+        snow.setSpeedError(0.25f);
+        snow.randomizeRotation();
         menu();
     }
 
@@ -252,6 +266,10 @@ public class MainGameLoop {
                     hitWater = true;
                 }
             }
+            if(particles) {
+                snow.generateParticles(new Vector3f(player.getPosition().x,player.getPosition().y + 10, player.getPosition().z));
+                ParticleMaster.update(camera);
+            }
             if(lights.get(0).getColour().x>5){
                 rate=-5/4f*DisplayManager.getDelta();
             }else if(lights.get(0).getColour().x<0){
@@ -278,6 +296,9 @@ public class MainGameLoop {
             fbos.unbindCurrentFrameBuffer();
             renderer.renderScene(normalMappedEntities,entities,terrains,lights,camera,player,new Vector4f(0,-1,0,100000));
             waterRenderer.render(waters,camera, lights.get(0));
+            if(particles) {
+                ParticleMaster.render(camera);
+            }
             guiRenderer.render(guis);
             TextMaster.render();
             DisplayManager.updateDisplay();
@@ -466,14 +487,18 @@ public class MainGameLoop {
         GUIText text = loadText("Sound", 3,new Vector2f(0.25f,0.575f),0.5f,true,new Vector3f(1,1,1));
         GuiTexture texture = new GuiTexture(loader.loadTexture("texture"),new Vector2f(0,-0.25f),new Vector2f(0.25f,0.1f));
         JButton sound = new JButton(text,texture,JButton.calculateTopLeft(texture.getPosition(),texture.getScale()),JButton.calculateBottomRight(texture.getPosition(),texture.getScale()),buttons);
+        JButton particle = new JButton(loadText("Particles",3,new Vector2f(0.25f,0.7f),0.5f,true,new Vector3f(1,1,1)),new GuiTexture(loader.loadTexture("texture"),new Vector2f(0f,-0.5f),new Vector2f(0.25f,0.1f)),JButton.calculateTopLeft(new Vector2f(0f,-0.5f),new Vector2f(0.25f,0.1f)),JButton.calculateBottomRight(new Vector2f(0f,-0.5f),new Vector2f(0.25f,0.1f)),buttons);
         JButton back = new JButton(loadText("Back",3,new Vector2f(0.25f,0.825f),0.5f,true,new Vector3f(1,1,1)),new GuiTexture(loader.loadTexture("texture"), new Vector2f(0f,-0.75f),new Vector2f(0.25f,0.1f)),JButton.calculateTopLeft(new Vector2f(0f,-0.75f),new Vector2f(0.25f,0.1f)),JButton.calculateBottomRight(new Vector2f(0f,-0.75f),new Vector2f(0.25f,0.1f)),buttons);
         guis.add(new GuiTexture(loader.loadTexture("nightBack"),new Vector2f(0,0),new Vector2f(1,1)));
         guis.add(sound.getTexture());
+        guis.add(particle.getTexture());
         guis.add(back.getTexture());
         loadText("The Night Is Dark",6,new Vector2f(0.1f,0.1f),0.8f,true,new Vector3f(1,1,1));
         GuiTexture soundGUI = new GuiTexture(loader.loadTexture("green"),new Vector2f(0.375f,-0.25f),new Vector2f(0.1f,0.1f));
-        List<GuiTexture> soundList = new ArrayList<>();
-        soundList.add(soundGUI);
+        GuiTexture particleGUI = new GuiTexture(loader.loadTexture("green"),new Vector2f(0.375f,-0.5f),new Vector2f(0.1f,0.1f));
+        List<GuiTexture> GUIList = new ArrayList<>();
+        GUIList.add(soundGUI);
+        GUIList.add(particleGUI);
         while(!backToMenu){
             mousePicker.update();
             if(Mouse.isButtonDown(0)) {
@@ -481,6 +506,8 @@ public class MainGameLoop {
                     backToMenu = MousePicker.checkIfOnButton(back);
                     if (MousePicker.checkIfOnButton(sound)) {
                         sounds = !sounds;
+                    }else if(MousePicker.checkIfOnButton(particle)){
+                        particles = !particles;
                     }
                 }
                 down = true;
@@ -500,7 +527,12 @@ public class MainGameLoop {
             }else{
                 soundGUI.setTexture(loader.loadTexture("red"));
             }
-            guiRenderer.render(soundList);
+            if(particles){
+                particleGUI.setTexture(loader.loadTexture("green"));
+            }else{
+                particleGUI.setTexture(loader.loadTexture("red"));
+            }
+            guiRenderer.render(GUIList);
             TextMaster.render();
             DisplayManager.updateDisplay();
             if(Display.isCloseRequested()) {
@@ -509,6 +541,7 @@ public class MainGameLoop {
             }
         }
         sound.deleteButton(buttons);
+        particle.deleteButton(buttons);
         back.deleteButton(buttons);
         clearTexts();
         texts.clear();
@@ -543,6 +576,7 @@ public class MainGameLoop {
     }
 
     private void exit(){
+        ParticleMaster.cleanUp();
         TextMaster.cleanUp();
         source.cleanUp();
         source2.cleanUp();

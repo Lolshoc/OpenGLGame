@@ -14,11 +14,12 @@ public class DisplayManager {
     private static float delta;
 
     public static void createDisplay(){
-
+        ContextAttribs attribs = new ContextAttribs(3,3).withForwardCompatible(true).withProfileCore(true);
         try {
             Display.setDisplayMode(new DisplayMode(WIDTH, HEIGHT));
-            Display.create();
+            Display.create(new PixelFormat(), attribs);
             Display.setTitle("The Night Is Dark!");
+            GL11.glEnable(GL13.GL_MULTISAMPLE);
         }catch (LWJGLException e){
             e.printStackTrace();
         }
