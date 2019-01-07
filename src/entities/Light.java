@@ -75,13 +75,13 @@ public class Light {
         fourLights.add(lights.get((int)index[0]));
         fourLights.add(lights.get((int)index[1]));
         fourLights.add(lights.get((int)index[2]));
-        //fourLights.add(lights.get(1));
-        fourLights.add(lights.get((int)index[3]));
+        fourLights.add(lights.get(0));
+        //fourLights.add(lights.get((int)index[3]));
         return fourLights;
     }
 
     public static void updateLight(Light light, Player player, float old, float rate){
-        light.setPosition(new Vector3f(player.getPosition().x,player.getPosition().y+100,player.getPosition().z));
+        //light.setPosition(new Vector3f(player.getPosition().x,player.getPosition().y+100,player.getPosition().z));
         light.setColour(new Vector3f(old+rate,old+rate,old+rate));
     }
 }

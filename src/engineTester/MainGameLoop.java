@@ -241,7 +241,7 @@ public class MainGameLoop {
         }
         boolean paused = false;
         boolean hitWater = true;
-        float rate=0.03f;
+        float rate=0.15f;
         float old=lights.get(0).getColour().x;
         current = Terrain.calculateTerrain(terrains, player.getPosition());
         updateGrid();
@@ -275,10 +275,10 @@ public class MainGameLoop {
                 snow.generateParticles(new Vector3f(player.getPosition().x,player.getPosition().y + 10, player.getPosition().z));
                 ParticleMaster.update(camera);
             }
-            if(lights.get(0).getColour().x>5){
-                rate=-5/4f*DisplayManager.getDelta();
-            }else if(lights.get(0).getColour().x<0){
-                rate=5/4f*DisplayManager.getDelta();
+            if(lights.get(0).getColour().x>0.7f){
+                rate=-0.15f*DisplayManager.getDelta();
+            }else if(lights.get(0).getColour().x<0f){
+                rate=0.15f*DisplayManager.getDelta();
             }
             Light.updateLight(lights.get(0),player,old,rate);
             old = lights.get(0).getColour().x;
@@ -408,7 +408,7 @@ public class MainGameLoop {
     }
 
     private void initEntitiies(){
-        lights.add(new Light(new Vector3f(2000,1000,-7000),new Vector3f(1f,1f,1f),new Vector3f(0.001f,0.001f,0.001f)));
+        lights.add(new Light(new Vector3f(160000,100000,1600),new Vector3f(0.25f,0.25f,0.25f)));//,new Vector3f(0.001f,0.001f,0.001f)));
         //lights.add(new Light(new Vector3f(185,1000,-293),new Vector3f(1,1,1)));
         grass.getTexture().setHasTransparency(true);
         grass.getTexture().setUseFakeLighting(true);
@@ -426,7 +426,7 @@ public class MainGameLoop {
 
     private void calculateEntitiesToRender(){
         renderedEntities.clear();
-        normalMappedEntities.clear();
+        renderedNormalMappedEntities.clear();
         Vector2f topRight = new Vector2f(current.getX()+2*Terrain.SIZE,current.getZ()+2*Terrain.SIZE);
         Vector2f bottomLeft = new Vector2f(current.getX()-Terrain.SIZE,current.getZ()-Terrain.SIZE);
         for(Entity entity:entities){
